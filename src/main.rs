@@ -5,10 +5,7 @@ use std::fs::read;
 
 fn convert_4_bytes_to_u32_big_endian(bytes: Vec<u8>) -> u32 {
 
-    if bytes.len() != 4 {
-        panic!("byte array should be of size 4");
-    }
-        
+    assert_eq!(bytes.len(), 4, "byte array should be of size 4");
     let output: u32 = (bytes[0] as u32) * 2_u32.pow(24)
         + (bytes[1] as u32) * 2_u32.pow(16)
         + (bytes[2] as u32) * 2_u32.pow(8)

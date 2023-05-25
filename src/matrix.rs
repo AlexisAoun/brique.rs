@@ -1,4 +1,5 @@
 // To acces Matrix data : Matrix.data[row][column]
+use rand::prelude::*;
 
 pub struct Matrix {
     pub data: Vec<Vec<f64>>,
@@ -13,6 +14,18 @@ impl Matrix {
             width,
             height,
         }
+    }
+
+    pub fn init_rand(height: usize, width: usize) -> Matrix {
+        let mut output = Self::new(height, width);
+
+        for r in 0..height {
+            for c in 0..width {
+                let x: f64 = random();
+                output.data[r][c] = x*0.01;
+            }
+        }
+        output
     }
 
     pub fn dot(&self, m: &Matrix) -> Matrix {

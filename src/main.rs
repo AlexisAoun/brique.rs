@@ -45,25 +45,29 @@ fn main() {
     // let m3 = m1.dot(m2);
     // m3.display();
 
-    let mut m4: Matrix = Matrix::new(3, 5);
-    let mut m5: Matrix = Matrix::new(3, 1);
+    // let mut m4: Matrix = Matrix::new(3, 5);
+    // let mut m5: Matrix = Matrix::new(3, 1);
+    //
+    // m4.data[0][0] = 3.0;
+    // m4.data[1][0] = 7.0;
+    // m4.data[2][0] = -3.2;
+    //
+    // m5.data[0][0] = 1.0;
+    // m5.data[1][0] = -1.0;
+    // m5.data[2][0] = 1.0;
+    //
+    // m4.display();
+    // m5.display();
+    //
+    // let test2 = m4.add_value_to_all_columns(&m5);
+    // test2.display();
+    //
+    // let test_layer: ActivationLayer = ActivationLayer {};
+    //
+    // let test = test_layer.forward(&m5);
+    // test.display();
 
-    m4.data[0][0] = 3.0;
-    m4.data[1][0] = 7.0;
-    m4.data[2][0] = -3.2;
-
-    m5.data[0][0] = 1.0;
-    m5.data[1][0] = -1.0;
-    m5.data[2][0] = 1.0;
-
-    m4.display();
-    m5.display();
-
-    let test2 = m4.add_value_to_all_columns(&m5);
-    test2.display();
-
-    let test_layer: ActivationLayer = ActivationLayer {};
-
-    let test = test_layer.forward(&m5);
-    test.display();
+    let test_compute_layer = ComputeLayer::init(4, 10);
+    test_compute_layer.weights.display();
+    test_compute_layer.biases.display();
 }

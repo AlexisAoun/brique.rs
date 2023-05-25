@@ -16,10 +16,9 @@ pub struct ActivationLayer;
 impl Layer for ComputeLayer {
     fn init(input_size: u32, size: u32) -> Self {
         ComputeLayer {
-            weights: Matrix::new(size.try_into().unwrap(), input_size.try_into().unwrap()),
+            weights: Matrix::init_rand(size.try_into().unwrap(), input_size.try_into().unwrap()),
             biases: Matrix::new(size.try_into().unwrap(), 1),
         }
-        // TODO randomize weights
     }
 
     fn forward(&self, input: &Matrix) -> Matrix {

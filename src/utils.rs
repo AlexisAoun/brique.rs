@@ -1,8 +1,7 @@
-use std::fs::read;
 use crate::Matrix;
+use std::fs::read;
 
 fn convert_4_bytes_to_u32_big_endian(bytes: Vec<u8>) -> u32 {
-
     assert_eq!(bytes.len(), 4, "byte array should be of size 4");
     let output: u32 = (bytes[0] as u32) * 2_u32.pow(24)
         + (bytes[1] as u32) * 2_u32.pow(16)
@@ -14,23 +13,39 @@ fn convert_4_bytes_to_u32_big_endian(bytes: Vec<u8>) -> u32 {
 
 fn check_label_file_header(array: &Vec<u8>) {
     // check out the documentation : http://yann.lecun.com/exdb/mnist/
-    let expected_file_header: Vec<u8> = vec![0,0,8,1];
+    let expected_file_header: Vec<u8> = vec![0, 0, 8, 1];
     let array_size: u32 = convert_4_bytes_to_u32_big_endian(array[4..8].to_vec());
 
-    assert_eq!(array[0..4].to_vec(), expected_file_header, "File incompatibility detected, are you sure you added the correct LABEL file ?");
-    assert_eq!(array_size, array.len() as u32 - 8,"File incompatibility detected, are you sure you added the correct LABEL file ?");
+    assert_eq!(
+        array[0..4].to_vec(),
+        expected_file_header,
+        "File incompatibility detected, are you sure you added the correct LABEL file ?"
+    );
+    assert_eq!(
+        array_size,
+        array.len() as u32 - 8,
+        "File incompatibility detected, are you sure you added the correct LABEL file ?"
+    );
 }
 
 fn check_image_file_header(array: &Vec<u8>) {
     // check out the documentation : http://yann.lecun.com/exdb/mnist/
-    let expected_file_header: Vec<u8> = vec![0,0,8,3];
+    let expected_file_header: Vec<u8> = vec![0, 0, 8, 3];
 
     let array_size: u32 = convert_4_bytes_to_u32_big_endian(array[4..8].to_vec());
     let array_size_row: u32 = convert_4_bytes_to_u32_big_endian(array[8..12].to_vec());
     let array_size_column: u32 = convert_4_bytes_to_u32_big_endian(array[12..16].to_vec());
 
-    assert_eq!(array_size*array_size_column*array_size_row, array.len() as u32 - 16,"File incompatibility detected, are you sure you added the correct IMAGE file ?");
-    assert_eq!(array[0..4].to_vec(), expected_file_header, "File incompatibility detected, are you sure you added the correct IMAGE file ?");
+    assert_eq!(
+        array_size * array_size_column * array_size_row,
+        array.len() as u32 - 16,
+        "File incompatibility detected, are you sure you added the correct IMAGE file ?"
+    );
+    assert_eq!(
+        array[0..4].to_vec(),
+        expected_file_header,
+        "File incompatibility detected, are you sure you added the correct IMAGE file ?"
+    );
 }
 
 pub fn extract_labels(path: &str) -> Matrix {
@@ -59,12 +74,11 @@ pub fn extract_images(path: &str) -> Matrix {
     let mut index = 0;
 
     for i in res[16..].to_vec() {
-        let x: usize = (index/pixels_per_image).try_into().unwrap();
-        let y: usize = (index%pixels_per_image).try_into().unwrap();
+        let x: usize = (index / pixels_per_image).try_into().unwrap();
+        let y: usize = (index % pixels_per_image).try_into().unwrap();
         output.data[y][x] = i as f64;
-        index+=1;
+        index += 1;
     }
 
     output
 }
-

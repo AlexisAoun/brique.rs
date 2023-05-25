@@ -52,7 +52,7 @@ pub fn extract_labels(path: &str) -> Matrix {
     let res: Vec<u8> = read(path).unwrap();
     check_label_file_header(&res);
     let slice: Vec<u8> = res[8..].to_vec();
-    let mut output: Matrix = Matrix::new(1, slice.len() as u32);
+    let mut output: Matrix = Matrix::new(1, slice.len());
 
     output.data[0] = slice.into_iter().map(|x| x as f64).collect();
 
@@ -70,7 +70,7 @@ pub fn extract_images(path: &str) -> Matrix {
 
     let pixels_per_image: u32 = array_size_row * array_size_column;
 
-    let mut output: Matrix = Matrix::new(pixels_per_image, array_size);
+    let mut output: Matrix = Matrix::new(pixels_per_image.try_into().unwrap(), array_size.try_into().unwrap());
     let mut index = 0;
 
     for i in res[16..].to_vec() {

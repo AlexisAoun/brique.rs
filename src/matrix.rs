@@ -2,14 +2,14 @@
 
 pub struct Matrix {
     pub data: Vec<Vec<f64>>,
-    pub width: u32,
-    pub height: u32,
+    pub width: usize,
+    pub height: usize,
 }
 
 impl Matrix {
-    pub fn new(height: u32, width: u32) -> Matrix {
+    pub fn new(height: usize, width: usize) -> Matrix {
         Matrix {
-            data: vec![vec![0.0; width.try_into().unwrap()]; height.try_into().unwrap()],
+            data: vec![vec![0.0; width]; height],
             width,
             height,
         }
@@ -18,10 +18,10 @@ impl Matrix {
     pub fn dot(&self, m: Matrix) -> Matrix {
         let mut res: Matrix = Matrix::new(self.height, m.width);
         if self.width == m.height {
-            for i in 0usize..res.width.try_into().unwrap() {
-                for j in 0usize..m.height.try_into().unwrap() {
+            for i in 0..res.width {
+                for j in 0..m.height {
                     let mut tmp: f64 = 0.0;
-                    for a in 0usize..self.width.try_into().unwrap() {
+                    for a in 0..self.width {
                         tmp = tmp + self.data[j][a] * m.data[a][i];
                     }
                     res.data[j][i] = tmp;
@@ -32,13 +32,28 @@ impl Matrix {
         }
         res
     }
+    
+    // adds a matrix of Y height and 1 width to a matrix of Y height and X width
+    pub fn add_value_to_all_columns(&self, m: Matrix) -> Matrix {
+        assert_eq!(m.width, 1, "The input matrix should have a width of 1");
+        assert_eq!(m.height, self.height, "The 2 matrices should have the same height");
+        let mut res: Matrix = Matrix::new(self.height, self.width);
+            
+        for c in 0..self.height {
+            for r in 0..self.width {
+                res.data[c][r] = self.data[c][r] + m.data[c][0];
+            }
+        }
+
+        res
+    }
 
     pub fn display(&self) {
         print!("\n");
         print!("-------------");
         print!("\n");
-        for i in 0..self.height.try_into().unwrap() {
-            for j in 0..self.width.try_into().unwrap() {
+        for i in 0..self.height {
+            for j in 0..self.width {
                 print!(" {} |", self.data[i][j]);
             }
             print!("\n");

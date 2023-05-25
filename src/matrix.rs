@@ -1,28 +1,30 @@
-pub struct Matrice {
+// To acces Matrix data : Matrix.data[row][column]
+
+pub struct Matrix {
     pub data: Vec<Vec<f64>>,
     pub width: u32,
     pub height: u32
 }
 
-impl Matrice {
-   pub fn new(width: u32, height: u32)->Matrice{
-       Matrice {
-        data: vec![vec![0.0; height.try_into().unwrap()]; width.try_into().unwrap()],
+impl Matrix {
+   pub fn new(height: u32, width: u32)->Matrix{
+       Matrix {
+        data: vec![vec![0.0; width.try_into().unwrap()]; height.try_into().unwrap()],
         width,
         height
        }
    }
 
-   pub fn dot(&self, m:Matrice)->Matrice {
-       let mut res: Matrice = Matrice::new(m.width, self.height);
+   pub fn dot(&self, m:Matrix)->Matrix {
+       let mut res: Matrix = Matrix::new(self.height, m.width);
        if self.width == m.height {
             for i in 0usize..res.width.try_into().unwrap() {
                 for j in 0usize..m.height.try_into().unwrap() {
                     let mut tmp: f64 = 0.0;
                     for a in 0usize..self.width.try_into().unwrap() {
-                        tmp = tmp + self.data[a][j]*m.data[i][a];
+                        tmp = tmp + self.data[j][a]*m.data[a][i];
                     }
-                    res.data[i][j] = tmp;
+                    res.data[j][i] = tmp;
                 }
             }
        } else {
@@ -37,7 +39,7 @@ impl Matrice {
         print!("\n");
         for i in 0..self.height.try_into().unwrap() {
             for j in 0..self.width.try_into().unwrap() {
-                print!(" {} |",self.data[j][i]);
+                print!(" {} |",self.data[i][j]);
             }
             print!("\n");
         }

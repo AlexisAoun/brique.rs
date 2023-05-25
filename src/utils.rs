@@ -1,5 +1,5 @@
 use std::fs::read;
-use crate::Matrice;
+use crate::Matrix;
 
 fn convert_4_bytes_to_u32_big_endian(bytes: Vec<u8>) -> u32 {
 
@@ -33,13 +33,18 @@ fn check_image_file_header(array: &Vec<u8>) {
     assert_eq!(array[0..4].to_vec(), expected_file_header, "File incompatibility detected, are you sure you added the correct IMAGE file ?");
 }
 
-pub fn extract_labels(path: &str) -> Vec<u8> {
+pub fn extract_labels(path: &str) -> Matrix {
     let res: Vec<u8> = read(path).unwrap();
     check_label_file_header(&res);
-    res[8..].to_vec()
+    let slice: Vec<u8> = res[8..].to_vec();
+    let mut output: Matrix = Matrix::new(1, slice.len() as u32);
+
+    output.data[0] = slice.into_iter().map(|x| x as f64).collect();
+
+    output
 }
 
-pub fn extract_images(path: &str) -> Matrice {
+pub fn extract_images(path: &str) -> Matrix {
     let res: Vec<u8> = read(path).unwrap();
 
     check_image_file_header(&res);
@@ -50,13 +55,13 @@ pub fn extract_images(path: &str) -> Matrice {
 
     let pixels_per_image: u32 = array_size_row * array_size_column;
 
-    let mut output: Matrice = Matrice::new(array_size, pixels_per_image);
+    let mut output: Matrix = Matrix::new(pixels_per_image, array_size);
     let mut index = 0;
 
     for i in res[16..].to_vec() {
         let x: usize = (index/pixels_per_image).try_into().unwrap();
         let y: usize = (index%pixels_per_image).try_into().unwrap();
-        output.data[x][y] = i as f64;
+        output.data[y][x] = i as f64;
         index+=1;
     }
 

@@ -1,22 +1,10 @@
+mod layers;
 mod matrix;
 mod utils;
 
-use crate::matrix::Matrix;
-use crate::utils::{extract_images, extract_labels};
-
-pub struct compute_layer {
-    pub weights: Matrix,
-    pub biases: Matrix,
-}
-
-impl compute_layer {
-    pub fn forward(self, input: Matrix) -> Matrix {
-        let mut output: Matrix = input.dot(self.weights);
-        output = output.add_value_to_all_columns(self.biases);
-
-        output
-    }
-}
+use crate::layers::*;
+use crate::matrix::*;
+//use crate::utils::*;
 
 fn main() {
     // let labels: Matrix = extract_labels("data/train-labels.idx1-ubyte");
@@ -57,21 +45,25 @@ fn main() {
     // let m3 = m1.dot(m2);
     // m3.display();
 
-    let mut m4: Matrix = Matrix::new(3,5);
-    let mut m5: Matrix = Matrix::new(3,1);
-
+    let mut m4: Matrix = Matrix::new(3, 5);
+    let mut m5: Matrix = Matrix::new(3, 1);
 
     m4.data[0][0] = 3.0;
     m4.data[1][0] = 7.0;
     m4.data[2][0] = -3.2;
 
     m5.data[0][0] = 1.0;
-    m5.data[1][0] = 1.0;
+    m5.data[1][0] = -1.0;
     m5.data[2][0] = 1.0;
 
     m4.display();
     m5.display();
 
-    let m6 = m4.add_value_to_all_columns(m5);
-    m6.display();
+    let test2 = m4.add_value_to_all_columns(&m5);
+    test2.display();
+
+    let test_layer: ActivationLayer = ActivationLayer {};
+
+    let test = test_layer.forward(&m5);
+    test.display();
 }

@@ -15,7 +15,7 @@ impl Matrix {
         }
     }
 
-    pub fn dot(&self, m: Matrix) -> Matrix {
+    pub fn dot(&self, m: &Matrix) -> Matrix {
         let mut res: Matrix = Matrix::new(self.height, m.width);
         if self.width == m.height {
             for i in 0..res.width {
@@ -32,16 +32,19 @@ impl Matrix {
         }
         res
     }
-    
+
     // adds a matrix of Y height and 1 width to a matrix of Y height and X width
-    pub fn add_value_to_all_columns(&self, m: Matrix) -> Matrix {
+    pub fn add_value_to_all_columns(&self, m: &Matrix) -> Matrix {
         assert_eq!(m.width, 1, "The input matrix should have a width of 1");
-        assert_eq!(m.height, self.height, "The 2 matrices should have the same height");
+        assert_eq!(
+            m.height, self.height,
+            "The 2 matrices should have the same height"
+        );
         let mut res: Matrix = Matrix::new(self.height, self.width);
-            
-        for c in 0..self.height {
-            for r in 0..self.width {
-                res.data[c][r] = self.data[c][r] + m.data[c][0];
+
+        for r in 0..self.height {
+            for c in 0..self.width {
+                res.data[r][c] = self.data[r][c] + m.data[r][0];
             }
         }
 

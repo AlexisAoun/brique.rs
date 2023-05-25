@@ -1,6 +1,14 @@
 use crate::Matrix;
 use std::fs::read;
 
+pub fn relu(input: f64) -> f64 {
+    if input < 0.0 {
+        0.0
+    } else {
+        input
+    }
+}
+
 fn convert_4_bytes_to_u32_big_endian(bytes: Vec<u8>) -> u32 {
     assert_eq!(bytes.len(), 4, "byte array should be of size 4");
     let output: u32 = (bytes[0] as u32) * 2_u32.pow(24)
@@ -70,7 +78,10 @@ pub fn extract_images(path: &str) -> Matrix {
 
     let pixels_per_image: u32 = array_size_row * array_size_column;
 
-    let mut output: Matrix = Matrix::new(pixels_per_image.try_into().unwrap(), array_size.try_into().unwrap());
+    let mut output: Matrix = Matrix::new(
+        pixels_per_image.try_into().unwrap(),
+        array_size.try_into().unwrap(),
+    );
     let mut index = 0;
 
     for i in res[16..].to_vec() {

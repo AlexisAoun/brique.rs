@@ -27,23 +27,30 @@ fn main() {
     // }
     //
     // print!("\n");
-    // let mut m1: Matrix = Matrix::new(2,2);
-    // m1.data[0][0] = -3242.213;
-    // m1.data[1][0] = 1242356.4245;
-    // m1.data[0][1] = 41466.9088;
-    // m1.data[1][1] = 0.0;
+    
+    // let mut m1: Matrix = Matrix::new(4,2);
+    // m1.data[0][0] = 2.0;
+    // m1.data[0][1] = 1.0;
+    // m1.data[1][0] = 4.0;
+    // m1.data[1][1] = 5.6;
+    // m1.data[2][0] = 23.0;
+    // m1.data[2][1] = -0.4;
+    // m1.data[3][0] = 0.0;
+    // m1.data[3][1] = 3.0;
     // let mut m2: Matrix = Matrix::new(2,3);
-    // m2.data[0][0] = 898.0;
-    // m2.data[1][0] = -222.3;
-    // m2.data[0][1] = -2467.9098;
-    // m2.data[1][1] = 1356770.0;
-    // m2.data[0][2] = -696969.69696;
-    // m2.data[1][2] = 10.0;
+    // m2.data[0][0] = 2.0;
+    // m2.data[0][1] = -0.69;
+    // m2.data[0][2] = 6.5;
+    // m2.data[1][0] = -1.0;
+    // m2.data[1][1] = 1.0;
+    // m2.data[1][2] = 0.5;
+    //
     // m1.display();
     // m2.display();
     //
-    // let m3 = m1.dot(m2);
+    // let m3 = m1.dot(&m2);
     // m3.display();
+    // TODO write unit test for matrix operations
 
     // let mut m4: Matrix = Matrix::new(3, 5);
     // let mut m5: Matrix = Matrix::new(3, 1);
@@ -67,7 +74,15 @@ fn main() {
     // let test = test_layer.forward(&m5);
     // test.display();
 
-    let test_compute_layer = ComputeLayer::init(4, 10);
-    test_compute_layer.weights.display();
+    let test_compute_layer = ComputeLayer::init(2, 4);
+    let mut m6: Matrix = Matrix::new(1, 2);
+    m6.data[0][0] = 1.0;
+    m6.data[0][1] = 1.0;
+
+    let output = test_compute_layer.forward(&m6);
+    test_compute_layer.weights_t.display();
     test_compute_layer.biases.display();
+    m6.display();
+    output.display();
+
 }

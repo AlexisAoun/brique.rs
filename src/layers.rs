@@ -6,8 +6,9 @@ pub trait Layer {
     fn forward(&self, input: &Matrix) -> Matrix;
 }
 
+// note : we have directly the transpose of weights (hence the _t) to optimize computation
 pub struct ComputeLayer {
-    pub weights: Matrix,
+    pub weights_t: Matrix,
     pub biases: Matrix,
 }
 
@@ -16,14 +17,14 @@ pub struct ActivationLayer;
 impl Layer for ComputeLayer {
     fn init(input_size: u32, size: u32) -> Self {
         ComputeLayer {
-            weights: Matrix::init_rand(size.try_into().unwrap(), input_size.try_into().unwrap()),
-            biases: Matrix::new(size.try_into().unwrap(), 1),
+            weights_t: Matrix::init_rand(input_size.try_into().unwrap(), size.try_into().unwrap()),
+            biases: Matrix::new(1, size.try_into().unwrap()),
         }
     }
 
     fn forward(&self, input: &Matrix) -> Matrix {
-        let mut output: Matrix = input.dot(&self.weights);
-        output = output.add_value_to_all_columns(&self.biases);
+        let mut output: Matrix = input.dot(&self.weights_t);
+        output = output.add_value_to_all_rows(&self.biases);
 
         output
     }

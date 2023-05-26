@@ -31,13 +31,13 @@ impl Matrix {
     pub fn dot(&self, m: &Matrix) -> Matrix {
         let mut res: Matrix = Matrix::new(self.height, m.width);
         if self.width == m.height {
-            for i in 0..res.width {
-                for j in 0..m.height {
+            for c in 0..m.width {
+                for r in 0..self.height {
                     let mut tmp: f64 = 0.0;
                     for a in 0..self.width {
-                        tmp = tmp + self.data[j][a] * m.data[a][i];
+                        tmp = tmp + self.data[r][a] * m.data[a][c];
                     }
-                    res.data[j][i] = tmp;
+                    res.data[r][c] = tmp;
                 }
             }
         } else {
@@ -46,22 +46,34 @@ impl Matrix {
         res
     }
 
-    // adds a matrix of Y height and 1 width to a matrix of Y height and X width
-    pub fn add_value_to_all_columns(&self, m: &Matrix) -> Matrix {
-        assert_eq!(m.width, 1, "The input matrix should have a width of 1");
+    // adds a matrix of X width and 1 height to a matrix of Y height and X width
+    pub fn add_value_to_all_rows(&self, m: &Matrix) -> Matrix {
+        assert_eq!(m.height, 1, "The input matrix should have a height of 1");
         assert_eq!(
-            m.height, self.height,
-            "The 2 matrices should have the same height"
+            m.width, self.width,
+            "The 2 matrices should have the same width"
         );
         let mut res: Matrix = Matrix::new(self.height, self.width);
 
         for r in 0..self.height {
             for c in 0..self.width {
-                res.data[r][c] = self.data[r][c] + m.data[r][0];
+                res.data[r][c] = self.data[r][c] + m.data[0][c];
             }
         }
 
         res
+    }
+
+    // transpose
+    pub fn t(&self) -> Matrix {
+        let mut output: Matrix = Matrix::new(self.width, self.height);
+
+        for r in 0..output.height {
+            for c in 0..output.width {
+                output.data[r][c] = self.data[c][r];
+            }
+        }
+        output 
     }
 
     pub fn display(&self) {

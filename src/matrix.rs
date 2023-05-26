@@ -76,6 +76,22 @@ impl Matrix {
         output 
     }
 
+    // used for test
+    pub fn isEqual(&self, m: &Matrix) -> bool {
+        if self.width != m.width || self.height != m.height {
+            return false
+        } else {
+            for r in 0..self.height {
+                for c in 0..self.width {
+                    if self.data[r][c] != m.data[r][c] {
+                        return false
+                    }
+                }
+            }
+        }
+        true
+    }
+
     pub fn display(&self) {
         print!("\n");
         print!("-------------");

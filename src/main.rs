@@ -1,6 +1,7 @@
 mod layers;
 mod matrix;
 mod utils;
+mod tests;
 
 use crate::layers::*;
 use crate::matrix::*;
@@ -28,30 +29,6 @@ fn main() {
     //
     // print!("\n");
     
-    // let mut m1: Matrix = Matrix::new(4,2);
-    // m1.data[0][0] = 2.0;
-    // m1.data[0][1] = 1.0;
-    // m1.data[1][0] = 4.0;
-    // m1.data[1][1] = 5.6;
-    // m1.data[2][0] = 23.0;
-    // m1.data[2][1] = -0.4;
-    // m1.data[3][0] = 0.0;
-    // m1.data[3][1] = 3.0;
-    // let mut m2: Matrix = Matrix::new(2,3);
-    // m2.data[0][0] = 2.0;
-    // m2.data[0][1] = -0.69;
-    // m2.data[0][2] = 6.5;
-    // m2.data[1][0] = -1.0;
-    // m2.data[1][1] = 1.0;
-    // m2.data[1][2] = 0.5;
-    //
-    // m1.display();
-    // m2.display();
-    //
-    // let m3 = m1.dot(&m2);
-    // m3.display();
-    // TODO write unit test for matrix operations
-
     // let mut m4: Matrix = Matrix::new(3, 5);
     // let mut m5: Matrix = Matrix::new(3, 1);
     //

@@ -4,6 +4,7 @@ mod utils;
 mod tests;
 mod loss;
 mod activation;
+mod model;
 
 use crate::activation::softmax;
 
@@ -70,7 +71,7 @@ fn main() {
     // let test = test_layer.forward(&m5);
     // test.display();
 
-    // let test_compute_layer = ComputeLayer::init(2, 4);
+    //let test_compute_layer = ComputeLayer::init(2, 4);
     // let mut m6: Matrix = Matrix::new(1, 2);
     // m6.data[0][0] = 1.0;
     // m6.data[0][1] = 1.0;

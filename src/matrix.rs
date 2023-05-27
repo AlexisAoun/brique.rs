@@ -77,7 +77,7 @@ impl Matrix {
     }
 
     // used for test
-    pub fn isEqual(&self, m: &Matrix) -> bool {
+    pub fn is_equal(&self, m: &Matrix) -> bool {
         if self.width != m.width || self.height != m.height {
             return false
         } else {
@@ -90,6 +90,16 @@ impl Matrix {
             }
         }
         true
+    }
+
+    pub fn exp(&self) -> Matrix {
+        let mut output: Matrix = Matrix::new(self.height, self.width);
+        for r in 0..self.height {
+            for c in 0..self.width {
+                output.data[r][c] = self.data[r][c].exp();
+            }
+        }
+        output
     }
 
     pub fn display(&self) {

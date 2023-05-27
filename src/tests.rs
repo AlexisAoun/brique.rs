@@ -36,7 +36,7 @@ mod tests {
         expected_output.data[3][1] = 3.0;
         expected_output.data[3][2] = 1.5;
 
-        assert!(output.isEqual(&expected_output));
+        assert!(output.is_equal(&expected_output));
     }
 
 }

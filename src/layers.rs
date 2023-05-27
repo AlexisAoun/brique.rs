@@ -1,5 +1,6 @@
 use crate::matrix::*;
 use crate::utils::*;
+use crate::activation::*;
 
 pub trait Layer {
     fn init(input_size: u32, size: u32) -> Self;

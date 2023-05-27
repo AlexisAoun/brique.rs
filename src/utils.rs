@@ -1,28 +1,6 @@
 use crate::Matrix;
 use std::fs::read;
 
-pub fn relu(input: f64) -> f64 {
-    if input < 0.0 {
-        0.0
-    } else {
-        input
-    }
-}
-
-pub fn softmax(input: &Matrix) -> Matrix {
-    let input_exp: Matrix = input.exp();
-    let mut output: Matrix = Matrix::new(input.height, input.width);
-
-    for r in 0..input.height {
-        let sum: f64 = input_exp.data[r].iter().sum();
-        for c in 0..input.width {
-            output.data[r][c] = input_exp.data[r][c] / sum;
-        } 
-    }
-
-    output
-}
-
 fn convert_4_bytes_to_u32_big_endian(bytes: Vec<u8>) -> u32 {
     assert_eq!(bytes.len(), 4, "byte array should be of size 4");
     let output: u32 = (bytes[0] as u32) * 2_u32.pow(24)

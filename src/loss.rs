@@ -20,7 +20,7 @@ pub fn compute_loss(output: &Matrix, labels: &Matrix, lambda: f64) -> f64 {
         loss += -output_softmax.data[0][c].ln();
     }
 
+    // TODO compute reg loss
 
     loss
-
 }

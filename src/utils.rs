@@ -71,15 +71,15 @@ pub fn extract_images(path: &str) -> Matrix {
     let pixels_per_image: u32 = array_size_row * array_size_column;
 
     let mut output: Matrix = Matrix::new(
-        pixels_per_image.try_into().unwrap(),
         array_size.try_into().unwrap(),
+        pixels_per_image.try_into().unwrap(),
     );
     let mut index = 0;
 
     for i in res[16..].to_vec() {
         let x: usize = (index / pixels_per_image).try_into().unwrap();
         let y: usize = (index % pixels_per_image).try_into().unwrap();
-        output.data[y][x] = i as f64;
+        output.data[x][y] = i as f64;
         index += 1;
     }
 

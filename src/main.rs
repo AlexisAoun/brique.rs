@@ -6,10 +6,9 @@ mod loss;
 mod activation;
 mod model;
 
-use crate::activation::softmax;
-
 use crate::layers::*;
 use crate::matrix::*;
+use crate::model::*;
 //use crate::utils::*;
 
 fn main() {
@@ -71,15 +70,26 @@ fn main() {
     // let test = test_layer.forward(&m5);
     // test.display();
 
-    //let test_compute_layer = ComputeLayer::init(2, 4);
-    // let mut m6: Matrix = Matrix::new(1, 2);
-    // m6.data[0][0] = 1.0;
-    // m6.data[0][1] = 1.0;
+    let layer1 = Layer::init(5, 10, true);
+    let layer2 = Layer::init(10, 3, false);
+    let model = Model { layers: vec![layer1, layer2], lambda: 2.0 };
+
+    let mut m6: Matrix = Matrix::new(1, 5);
+    m6.data[0][0] = 1.0;
+    m6.data[0][1] = 6.0;
+    m6.data[0][2] = -2.0;
+    m6.data[0][3] = 2.4;
+    m6.data[0][4] = -3.1;
+
+    model.evaluate(&m6).display();
+
     //
     // let output = test_compute_layer.forward(&m6);
     // test_compute_layer.weights_t.display();
     // test_compute_layer.biases.display();
     // m6.display();
     // output.display();
+
+
 
 }

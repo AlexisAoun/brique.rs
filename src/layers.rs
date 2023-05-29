@@ -1,12 +1,12 @@
+use crate::activation::*;
 use crate::matrix::*;
 use crate::utils::*;
-use crate::activation::*;
 
 // note : we have directly the transpose of weights (hence the _t) to optimize computation
 pub struct Layer {
     pub weights_t: Matrix,
     pub biases: Matrix,
-    pub activation: bool
+    pub activation: bool,
 }
 
 impl Layer {
@@ -14,7 +14,7 @@ impl Layer {
         Layer {
             weights_t: Matrix::init_rand(input_size.try_into().unwrap(), size.try_into().unwrap()),
             biases: Matrix::new(1, size.try_into().unwrap()),
-            activation
+            activation,
         }
     }
 
@@ -40,4 +40,3 @@ impl Layer {
         output
     }
 }
-

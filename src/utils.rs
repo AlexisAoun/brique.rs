@@ -1,7 +1,6 @@
 use crate::Matrix;
-use std::fs::read;
 use rand::seq::SliceRandom;
-
+use std::fs::read;
 
 pub fn generate_vec_rand_unique(size: u32) -> Vec<u32> {
     let mut rng = rand::thread_rng();
@@ -12,9 +11,12 @@ pub fn generate_vec_rand_unique(size: u32) -> Vec<u32> {
 }
 
 // not the optimal way to return Matrix with f64s. can be optimised with matrix that accepts
-// generic type  
+// generic type
 pub fn generate_batch_index(index_table: Vec<u32>, batch_size: u32) -> Matrix {
-    assert!(index_table.len() as u32 >= batch_size, "Batch size cannot be bigger than training dataset size");
+    assert!(
+        index_table.len() as u32 >= batch_size,
+        "Batch size cannot be bigger than training dataset size"
+    );
     assert!(batch_size > 0, "Batch size must be strictly positive");
 
     let mut number_of_batches: usize = index_table.len() / batch_size as usize;
@@ -30,9 +32,9 @@ pub fn generate_batch_index(index_table: Vec<u32>, batch_size: u32) -> Matrix {
             if index < index_table.len() {
                 output.data[i][j] = index_table[index] as f64;
             } else {
-                // just drop if uneven cant be bothered 
+                // just drop if uneven cant be bothered
                 output.data.pop();
-                output.height-=1;
+                output.height -= 1;
                 break 'outer;
             }
         }

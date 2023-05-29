@@ -1,7 +1,10 @@
-use crate::{Matrix, activation::softmax};
+use crate::{activation::softmax, Layer, Matrix};
 
 pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
-    assert_eq!(input.height, labels.width, "Input height and labels width should be equal");
+    assert_eq!(
+        input.height, labels.width,
+        "Input height and labels width should be equal"
+    );
     let mut output = Matrix::new(1, input.height);
     for c in 0..input.height {
         output.data[0][c] = input.data[c][labels.data[0][c] as usize];
@@ -10,8 +13,7 @@ pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
     output
 }
 
-// implementing cross-entropy and L2 regulariztion
-pub fn compute_loss(output: &Matrix, labels: &Matrix, lambda: f64) -> f64 {
+pub fn cross_entropy(output: &Matrix, labels: &Matrix) -> f64 {
     let output_one_hot: Matrix = one_hot_encoding(&output, &labels);
     let output_softmax: Matrix = softmax(&output_one_hot);
 
@@ -20,7 +22,14 @@ pub fn compute_loss(output: &Matrix, labels: &Matrix, lambda: f64) -> f64 {
         loss += -output_softmax.data[0][c].ln();
     }
 
-    // TODO compute reg loss
+    loss / output_softmax.width as f64
+}
 
-    loss
+pub fn l2_reg(layers: &Vec<Layer>, lambda: f64) -> f64 {
+    let mut l2: f64 = 0.0;
+    for layer in layers {
+        l2 += 0.5 * lambda * (layer.weights_t.pow(2).sum());
+    }
+
+    l2
 }

@@ -24,7 +24,7 @@ impl Matrix {
         for r in 0..height {
             for c in 0..width {
                 let x: f64 = random();
-                output.data[r][c] = x*0.01;
+                output.data[r][c] = x * 0.01;
             }
         }
         output
@@ -75,18 +75,18 @@ impl Matrix {
                 output.data[r][c] = self.data[c][r];
             }
         }
-        output 
+        output
     }
 
     // used for test
     pub fn is_equal(&self, m: &Matrix) -> bool {
         if self.width != m.width || self.height != m.height {
-            return false
+            return false;
         } else {
             for r in 0..self.height {
                 for c in 0..self.width {
                     if self.data[r][c] != m.data[r][c] {
-                        return false
+                        return false;
                     }
                 }
             }
@@ -104,6 +104,25 @@ impl Matrix {
         output
     }
 
+    pub fn pow(&self, a: i32) -> Matrix {
+        let mut output: Matrix = Matrix::new(self.height, self.width);
+        for r in 0..self.height {
+            for c in 0..self.width {
+                output.data[r][c] = self.data[r][c].powi(a);
+            }
+        }
+        output
+    }
+
+    pub fn sum(&self) -> f64 {
+        let mut sum: f64 = 0.0;
+        for r in 0..self.height {
+            for c in 0..self.width {
+                sum += self.data[r][c];
+            }
+        }
+        sum
+    }
     pub fn display(&self) {
         print!("\n");
         print!("-------------");

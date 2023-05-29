@@ -1,10 +1,10 @@
-mod layers;
-mod matrix;
-mod utils;
-mod tests;
-mod loss;
 mod activation;
+mod layers;
+mod loss;
+mod matrix;
 mod model;
+mod tests;
+mod utils;
 
 use crate::layers::*;
 use crate::matrix::*;
@@ -12,9 +12,18 @@ use crate::model::*;
 use crate::utils::*;
 
 fn main() {
-    // let labels: Matrix = extract_labels("data/train-labels.idx1-ubyte");
-    // let images: Matrix = extract_images("data/train-images.idx3-ubyte");
-    //
+    println!("extracting...");
+    let labels: Matrix = extract_labels("data/train-labels.idx1-ubyte");
+    let images: Matrix = extract_images("data/train-images.idx3-ubyte");
+
+    let mut test_imags: Matrix = Matrix::new(20, 28 * 28);
+    let mut test_labels: Matrix = Matrix::new(1, 20);
+
+    for i in 0..20 {
+        test_imags.data[i] = images.data[i].clone();
+        test_labels.data[0][i] = labels.data[0][i];
+    }
+
     // println!("{}", labels.data[0][781]);
     //
     // for i in 0..28 * 28 {
@@ -32,7 +41,7 @@ fn main() {
     // }
     //
     // print!("\n");
-    // 
+    //
     // let mut m4: Matrix = Matrix::new(3, 3);
     // let mut m5: Matrix = Matrix::new(3, 1);
     //
@@ -47,7 +56,10 @@ fn main() {
     // m4.data[2][0] = 0.0;
     // m4.data[2][1] = -0.4;
     // m4.data[2][2] = 2.6;
-
+    //
+    //
+    // m4.display();
+    // println!("{}",m4.sum() );
     // m5.data[0][0] = 1.0;
     // m5.data[1][0] = -1.0;
     // m5.data[2][0] = 1.0;
@@ -70,17 +82,21 @@ fn main() {
     // let test = test_layer.forward(&m5);
     // test.display();
 
-    let layer1 = Layer::init(5, 10, true);
-    let layer2 = Layer::init(10, 3, false);
-    let model = Model { layers: vec![layer1, layer2], lambda: 2.0 };
-    
-    let input_data: Matrix = Matrix::init_rand(20, 5);
-    let input_labels: Matrix = Matrix::init_rand(1, 20);
+    let layer1 = Layer::init(28 * 28, 30, true);
+    let layer2 = Layer::init(30, 10, false);
+    let model = Model {
+        layers: vec![layer1, layer2],
+        lambda: 2.0,
+    };
 
-    println!("input data--------");
-    input_data.display();
-    
-    model.train(&input_data, &input_labels, 6, 1);
+    //  let input_data: Matrix = Matrix::init_rand(20, 5);
+    //  let input_labels: Matrix = Matrix::init_rand(1, 20);
+    //
+    //  println!("input data--------");
+    //  input_data.display();
+
+    println!("training...");
+    model.train(&test_imags, &test_labels, 5, 1);
 
     //
     // let output = test_compute_layer.forward(&m6);
@@ -88,6 +104,4 @@ fn main() {
     // test_compute_layer.biases.display();
     // m6.display();
     // output.display();
-
-
 }

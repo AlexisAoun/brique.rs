@@ -16,7 +16,7 @@ pub fn softmax(input: &Matrix) -> Matrix {
         let sum: f64 = input_exp.data[r].iter().sum();
         for c in 0..input.width {
             output.data[r][c] = input_exp.data[r][c] / sum;
-        } 
+        }
     }
 
     output

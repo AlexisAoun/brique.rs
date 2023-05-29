@@ -90,6 +90,6 @@ fn main() {
     // m6.display();
     // output.display();
 
-
+    generate_batches(generate_vec_rand_unique(10), 3).display();
 
 }

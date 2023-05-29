@@ -1,7 +1,7 @@
 use crate::layers::*;
 use crate::matrix::*;
 use crate::activation::*;
-use rand::seq::SliceRandom;
+use crate::utils::*;
 
 pub struct Model {
     pub layers: Vec<Layer>,
@@ -24,15 +24,14 @@ impl Model {
     }
 
     // the steps : 
-    // zip data and labels into training dataset
     // before every epoch : 
     //  - shuffle dataset (use the algo of rand crate)
     //  - generate batch from shuffled dataset
     pub fn train(&self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
+        for epoch in 0..epochs {
+            let index_table = generate_vec_rand_unique(data.height as u32);
+        }
         
     }
 
-    fn generate_batch(&self) {
-
-    }
 }

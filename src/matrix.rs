@@ -1,6 +1,7 @@
 // To acces Matrix data : Matrix.data[row][column]
 use rand::prelude::*;
 
+// TODO generic type for matrix data
 pub struct Matrix {
     pub data: Vec<Vec<f64>>,
     pub width: usize,

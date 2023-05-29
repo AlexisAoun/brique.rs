@@ -70,18 +70,17 @@ fn main() {
     // let test = test_layer.forward(&m5);
     // test.display();
 
-    // let layer1 = Layer::init(5, 10, true);
-    // let layer2 = Layer::init(10, 3, false);
-    // let model = Model { layers: vec![layer1, layer2], lambda: 2.0 };
-    //
-    // let mut m6: Matrix = Matrix::new(1, 5);
-    // m6.data[0][0] = 1.0;
-    // m6.data[0][1] = 6.0;
-    // m6.data[0][2] = -2.0;
-    // m6.data[0][3] = 2.4;
-    // m6.data[0][4] = -3.1;
-    //
-    // model.evaluate(&m6).display();
+    let layer1 = Layer::init(5, 10, true);
+    let layer2 = Layer::init(10, 3, false);
+    let model = Model { layers: vec![layer1, layer2], lambda: 2.0 };
+    
+    let input_data: Matrix = Matrix::init_rand(20, 5);
+    let input_labels: Matrix = Matrix::init_rand(1, 20);
+
+    println!("input data--------");
+    input_data.display();
+    
+    model.train(&input_data, &input_labels, 6, 1);
 
     //
     // let output = test_compute_layer.forward(&m6);
@@ -90,6 +89,5 @@ fn main() {
     // m6.display();
     // output.display();
 
-    generate_batches(generate_vec_rand_unique(10), 3).display();
 
 }

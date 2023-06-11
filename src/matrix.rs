@@ -3,6 +3,7 @@ use rand::prelude::*;
 
 // TODO generic type for matrix data
 // TODO use iterators
+#[derive(Clone)]
 pub struct Matrix {
     pub data: Vec<Vec<f64>>,
     pub width: usize,

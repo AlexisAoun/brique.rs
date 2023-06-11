@@ -7,6 +7,7 @@ pub struct Layer {
     pub weights_t: Matrix,
     pub biases: Matrix,
     pub activation: bool,
+    pub output: Matrix
 }
 
 impl Layer {
@@ -15,18 +16,21 @@ impl Layer {
             weights_t: Matrix::init_rand(input_size.try_into().unwrap(), size.try_into().unwrap()),
             biases: Matrix::new(1, size.try_into().unwrap()),
             activation,
+            output: Matrix::new(0, 0)
         }
     }
 
-    pub fn forward(&self, input: &Matrix) -> Matrix {
-        let mut output: Matrix = input.dot(&self.weights_t);
-        output = output.add_value_to_all_rows(&self.biases);
+    pub fn forward(&mut self, input: &Matrix) -> Matrix {
+        let mut tmp_output = input.dot(&self.weights_t);
+        tmp_output = tmp_output.add_value_to_all_rows(&self.biases);
 
         if self.activation {
-            self.activation(&output)
+            self.output = self.activation(&tmp_output);
         } else {
-            output
+            self.output = tmp_output.clone();
         }
+
+        tmp_output
     }
 
     //implementing ReLu for this project

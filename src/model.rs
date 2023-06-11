@@ -10,10 +10,10 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn evaluate(&self, input: &Matrix) -> Matrix {
+    pub fn evaluate(&mut self, input: &Matrix) -> Matrix {
         let mut index: u32 = 0;
         let mut tmp: Matrix = Matrix::new(0, 0);
-        for layer in self.layers.iter() {
+        for layer in self.layers.iter_mut() {
             if index == 0 {
                 tmp = layer.forward(input);
             } else {
@@ -35,7 +35,7 @@ impl Model {
     //  - generate batch from shuffled dataset
     //  TODO i should really implement Matrix<T>
     //  TODO refactor it looks like ass
-    pub fn train(&self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
+    pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
         for epoch in 0..epochs {
             let index_table = generate_vec_rand_unique(data.height as u32);
             let index_matrix: Matrix = generate_batch_index(index_table, batch_size);
@@ -54,7 +54,6 @@ impl Model {
                 let loss: f64 = self.compute_loss(&score, &batch_label);
 
                 println!("loss : {}", loss);
-                // TODO all the backprop thingy
             }
         }
     }

@@ -84,7 +84,7 @@ fn main() {
 
     let layer1 = Layer::init(28 * 28, 30, true);
     let layer2 = Layer::init(30, 10, false);
-    let model = Model {
+    let mut model = Model {
         layers: vec![layer1, layer2],
         lambda: 2.0,
     };

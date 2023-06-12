@@ -82,11 +82,12 @@ fn main() {
     // let test = test_layer.forward(&m5);
     // test.display();
 
-    let layer1 = Layer::init(28 * 28, 30, true);
-    let layer2 = Layer::init(30, 10, false);
+    let layer1 = Layer::init(28 * 28, 20, true);
+    let layer3 = Layer::init(20, 10, false);
     let mut model = Model {
-        layers: vec![layer1, layer2],
-        lambda: 2.0,
+        layers: vec![layer1, layer3],
+        lambda: 0.1,
+        learning_step: 0.5
     };
 
     //  let input_data: Matrix = Matrix::init_rand(20, 5);

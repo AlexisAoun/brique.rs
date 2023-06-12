@@ -23,6 +23,9 @@ impl Model {
             } else {
                 tmp = layer.forward(&tmp);
             }
+
+            println!("evaluating index : {}", index);
+            tmp.display();
             index += 1;
         }
         softmax(&tmp)
@@ -49,22 +52,53 @@ impl Model {
     }
 
     pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix) {
-        let index: usize = self.layers.len();
-        while index >= 0 {
-            let layer: &mut Layer = &mut self.layers[index];
-            let previous_layer: Option<&mut Layer>;
+        let mut index: usize = self.layers.len() - 1;
+        let mut d_z: Matrix = d_score.clone();
+
+        loop {
+            let mut previous_layer: Option<Layer> = None;
 
             if index > 0 {
-                previous_layer = Some(&mut self.layers[index-1]);
+                previous_layer = Some(self.layers[index-1].clone());
             } 
 
-            if index == self.layers.len() - 1 {
-                let z_minus_1: Matrix = match previous_layer {
-                    None => input.clone(),
-                    Some(layer) => layer.output.clone()
-                };
+            let z_minus_1: Matrix = match previous_layer {
+                None => input.clone(),
+                Some(layer) => layer.output
+            };
 
-                let d_w: Matrix = z_minus_1.t().dot(d_score);
+            let d_w: Matrix = z_minus_1.t().dot(&d_z).div(input.height as f64);
+            d_w.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
+
+            let d_b: Matrix = d_z.sum_rows().div(input.height as f64);
+
+            self.layers[index].update_weigths(&d_w, self.learning_step);
+            self.layers[index].update_biases(&d_b, self.learning_step);
+
+            println!("layer number {}", index+1);
+            // self.layers[index].weights_t.display();
+            // self.layers[index].biases.display();
+
+
+            // println!("Debug update params");
+            // println!("layer number {}", index+1);
+            // println!("d_z");
+            // d_z.display();
+            // println!("d_w");
+            // d_w.display();
+            // println!("d_b");
+            // d_b.display();
+
+            // println!("d_z height {} width {}", d_z.height, d_z.width);
+            // println!("d_w height {} width {}", d_w.height, d_w.width);
+            // println!("d_b height {} width {}", d_b.height, d_b.width);
+
+            println!("god have merccyyyyy");
+
+            d_z = d_z.dot(&self.layers[index].weights_t.t());
+            
+            if index == 0 {
+                break;
             }
 
             index-=1;
@@ -96,17 +130,9 @@ impl Model {
                 let score: Matrix = self.evaluate(&batch_data);
                 let loss: f64 = self.compute_loss(&score, &batch_label);
 
+                score.display();
                 println!("loss : {}", loss);
 
-
-                println!("score : ");
-                score.display();
-
-                
-                println!("labels : ");
-                batch_label.display();
-
-                println!("d_score : ");
                 let d_score = Model::compute_d_score(&score, &batch_label);
                 self.update_params(&d_score, &batch_data);
             }

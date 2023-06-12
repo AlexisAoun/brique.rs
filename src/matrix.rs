@@ -124,6 +124,53 @@ impl Matrix {
         }
         sum
     }
+
+    pub fn sum_rows(&self) -> Matrix {
+        let mut output: Matrix = Matrix::new(1, self.width);
+        for c in 0..self.width {
+            for r in 0..self.height {
+                output.data[0][c] += self.data[r][c];
+            }
+        }
+
+        output
+    }
+
+    
+    pub fn div(&self, value: f64) -> Matrix {
+        assert_ne!(value, 0.0, "Divide by 0 matrix error");
+        let mut output: Matrix = Matrix::new(self.height, self.width);
+        for r in 0..self.height {
+            for c in 0..self.width {
+                output.data[r][c] = self.data[r][c] / value;
+            }
+        }
+        output
+    }
+
+    pub fn mult(&self, value: f64) -> Matrix {
+        let mut output: Matrix = Matrix::new(self.height, self.width);
+        for r in 0..self.height {
+            for c in 0..self.width {
+                output.data[r][c] = self.data[r][c] * value;
+            }
+        }
+        output
+    }
+
+    pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
+        assert!(self.height == m.height && self.width == m.width, "The two matrices should have the same dimensions");
+        let mut res: Matrix = Matrix::new(self.height, self.width);
+
+        for r in 0..self.height {
+            for c in 0..self.width {
+                res.data[r][c] = self.data[r][c] + m.data[r][c];
+            }
+        }
+
+        res
+    }
+
     pub fn display(&self) {
         print!("\n");
         print!("-------------");

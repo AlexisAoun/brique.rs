@@ -3,6 +3,7 @@ use crate::matrix::*;
 use crate::utils::*;
 
 // note : we have directly the transpose of weights (hence the _t) to optimize computation
+#[derive(Clone)]
 pub struct Layer {
     pub weights_t: Matrix,
     pub biases: Matrix,
@@ -42,5 +43,13 @@ impl Layer {
             }
         }
         output
+    }
+
+    pub fn update_weigths(&mut self, input: &Matrix, learning_step: f64) {
+        self.weights_t = self.weights_t.add_two_matrices(&input.mult(learning_step * -1.0));
+    }
+
+    pub fn update_biases(&mut self, input: &Matrix, learning_step: f64) {
+        self.biases = self.biases.add_two_matrices(&input.mult(learning_step * -1.0));
     }
 }

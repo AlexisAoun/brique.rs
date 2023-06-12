@@ -7,8 +7,12 @@ use crate::utils::*;
 pub struct Model {
     pub layers: Vec<Layer>,
     pub lambda: f64,
+    pub learning_step: f64
 }
 
+// all the variables begining with d (like d_score) are the derivative 
+// of the loss function compared to said variable, so d_score is d Loss/ d Score 
+// doing so for ease of read
 impl Model {
     pub fn evaluate(&mut self, input: &Matrix) -> Matrix {
         let mut index: u32 = 0;
@@ -27,6 +31,45 @@ impl Model {
     // implementing cross-entropy and L2 regulariztion
     pub fn compute_loss(&self, output: &Matrix, labels: &Matrix) -> f64 {
         cross_entropy(output, labels) + l2_reg(&self.layers, self.lambda)
+    }
+
+    pub fn compute_d_score(score: &Matrix, labels: &Matrix) -> Matrix {
+        let mut output: Matrix = Matrix::new(score.height, score.width);
+        for r in 0..score.height {
+            for c in 0..score.width {
+                if labels.data[0][r] == c as f64 {
+                    output.data[r][c] = score.data[r][c] - 1.0;
+                } else {
+                    output.data[r][c] = score.data[r][c];
+                }
+            }
+        }
+
+        output
+    }
+
+    pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix) {
+        let index: usize = self.layers.len();
+        while index >= 0 {
+            let layer: &mut Layer = &mut self.layers[index];
+            let previous_layer: Option<&mut Layer>;
+
+            if index > 0 {
+                previous_layer = Some(&mut self.layers[index-1]);
+            } 
+
+            if index == self.layers.len() - 1 {
+                let z_minus_1: Matrix = match previous_layer {
+                    None => input.clone(),
+                    Some(layer) => layer.output.clone()
+                };
+
+                let d_w: Matrix = z_minus_1.t().dot(d_score);
+            }
+
+            index-=1;
+        }
+
     }
 
     // the steps :
@@ -54,6 +97,18 @@ impl Model {
                 let loss: f64 = self.compute_loss(&score, &batch_label);
 
                 println!("loss : {}", loss);
+
+
+                println!("score : ");
+                score.display();
+
+                
+                println!("labels : ");
+                batch_label.display();
+
+                println!("d_score : ");
+                let d_score = Model::compute_d_score(&score, &batch_label);
+                self.update_params(&d_score, &batch_data);
             }
         }
     }

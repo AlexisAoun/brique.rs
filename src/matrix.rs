@@ -132,7 +132,7 @@ impl Matrix {
             for j in 0..self.width {
                 print!(" {} |", self.data[i][j]);
             }
-            print!("\n");
+            print!("/ \n");
         }
         print!("-------------");
         print!("\n");

@@ -24,8 +24,8 @@ impl Model {
                 tmp = layer.forward(&tmp);
             }
 
-            println!("evaluating index : {}", index);
-            tmp.display();
+            //println!("evaluating index : {}", index);
+            //tmp.display();
             index += 1;
         }
         softmax(&tmp)
@@ -44,6 +44,21 @@ impl Model {
                     output.data[r][c] = score.data[r][c] - 1.0;
                 } else {
                     output.data[r][c] = score.data[r][c];
+                }
+            }
+        }
+
+        output
+    }
+
+    pub fn compute_d_relu(input: &Matrix) -> Matrix {
+        let mut output: Matrix = Matrix::new(input.height, input.width);
+        for r in 0..input.height {
+            for c in 0..input.width {
+                if input.data[r][c] < 0.0 {
+                    output.data[r][c] = 0.0;
+                } else {
+                    output.data[r][c] = input.data[r][c];
                 }
             }
         }
@@ -75,8 +90,10 @@ impl Model {
             self.layers[index].update_weigths(&d_w, self.learning_step);
             self.layers[index].update_biases(&d_b, self.learning_step);
 
-            println!("layer number {}", index+1);
+            //println!("layer number {}", index+1);
+            // println!("weights $$$$$$$$$$$$$$$$");
             // self.layers[index].weights_t.display();
+            // println!("biases $$$$$$$$$$$$$$");
             // self.layers[index].biases.display();
 
 
@@ -93,12 +110,16 @@ impl Model {
             // println!("d_w height {} width {}", d_w.height, d_w.width);
             // println!("d_b height {} width {}", d_b.height, d_b.width);
 
-            println!("god have merccyyyyy");
+            //println!("god have merccyyyyy");
 
             d_z = d_z.dot(&self.layers[index].weights_t.t());
             
             if index == 0 {
                 break;
+            }
+
+            if self.layers[index - 1].activation {
+                d_z = Model::compute_d_relu(&d_z);
             }
 
             index-=1;
@@ -130,7 +151,7 @@ impl Model {
                 let score: Matrix = self.evaluate(&batch_data);
                 let loss: f64 = self.compute_loss(&score, &batch_label);
 
-                score.display();
+                //score.display();
                 println!("loss : {}", loss);
 
                 let d_score = Model::compute_d_score(&score, &batch_label);

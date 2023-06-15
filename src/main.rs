@@ -5,13 +5,22 @@ mod matrix;
 mod model;
 mod tests;
 mod utils;
+mod spiral;
 
 use crate::layers::*;
 use crate::matrix::*;
 use crate::model::*;
 use crate::utils::*;
+use crate::spiral::*;
 
 fn main() {
+    let linspace_test = linspace(0.2, 2.54, 13);
+
+    println!("{:?}", linspace_test);
+
+}
+
+fn testing() {
     println!("extracting...");
     let labels: Matrix = extract_labels("data/train-labels.idx1-ubyte");
     let images: Matrix = extract_images("data/train-images.idx3-ubyte");
@@ -86,8 +95,8 @@ fn main() {
     let layer3 = Layer::init(20, 10, false);
     let mut model = Model {
         layers: vec![layer1, layer3],
-        lambda: 0.1,
-        learning_step: 0.5
+        lambda: 0.0001,
+        learning_step: 0.005
     };
 
     //  let input_data: Matrix = Matrix::init_rand(20, 5);

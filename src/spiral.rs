@@ -1,7 +1,7 @@
 use crate::matrix::Matrix;
 use rand::prelude::*;
 
-fn generate_spiral_dataset(number_of_points: u32, number_of_classes: u32) -> (Matrix, Matrix) {
+pub fn generate_spiral_dataset(number_of_points: u32, number_of_classes: u32) -> (Matrix, Matrix) {
     let height: usize = (number_of_points*number_of_classes) as usize;
     let mut data: Matrix = Matrix::new(height, 2);
     let mut labels: Matrix = Matrix::new(1, height);
@@ -9,10 +9,10 @@ fn generate_spiral_dataset(number_of_points: u32, number_of_classes: u32) -> (Ma
     for class in 0..number_of_classes {
         let r: Vec<f64> = linspace(0.0, 1.0, number_of_points);
 
-        let rand: f64 = random();
         let a: Vec<f64> = linspace(class as f64 *4.0, (class + 1) as f64 * 4.0, number_of_points);
         let t: Vec<f64> = add_rand_to_vec(&a);
 
+        populate_data(&mut data, &mut labels, &r, &t, class, number_of_points);
     } 
 
     (data, labels)
@@ -43,10 +43,14 @@ fn add_rand_to_vec(input_vec: &Vec<f64>) -> Vec<f64> {
     output
 }
 
-fn populate_data(data: &mut Matrix, r: &Vec<f64>, t: &Vec<f64> , class: u32, n: u32) {
-    let index_delta: usize = data.height;
-    for index in index_delta*class as usize..index_delta + index_delta*class as usize {
-        data.data[index][0] = t[index].sin() * r[index];
-        data.data[index][1] = t[index].cos() * r[index];
+fn populate_data(data: &mut Matrix, labels: &mut Matrix, r: &Vec<f64>, t: &Vec<f64> , class: u32, n: u32) {
+    let n_u = n as usize;
+    let class_u = class as usize;
+    let mut index_2 = 0;
+    for index in n_u *class_u..n_u + (n_u *class_u) {
+        data.data[index][0] = t[index_2].sin() * r[index_2];
+        data.data[index][1] = t[index_2].cos() * r[index_2];
+        labels.data[0][index] = class as f64;
+        index_2+=1;
     }
 }

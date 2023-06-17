@@ -6,18 +6,17 @@ mod model;
 mod tests;
 mod utils;
 mod spiral;
+mod draw_spiral;
 
 use crate::layers::*;
 use crate::matrix::*;
 use crate::model::*;
 use crate::utils::*;
 use crate::spiral::*;
+use crate::draw_spiral::*;
 
 fn main() {
-    let linspace_test = linspace(0.2, 2.54, 13);
-
-    println!("{:?}", linspace_test);
-
+    draw_test();
 }
 
 fn testing() {

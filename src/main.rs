@@ -16,7 +16,24 @@ use crate::spiral::*;
 use crate::draw_spiral::*;
 
 fn main() {
-    draw_test();
+    spiral_dataset_test();
+}
+
+fn spiral_dataset_test() {
+    println!("generating spiral dataset");
+
+    let (data, labels) = generate_spiral_dataset(100, 3);
+
+    let layer1 = Layer::init(2, 100, true);
+    let layer2 = Layer::init(100, 3, false);
+    let mut model = Model {
+        layers: vec![layer1, layer2],
+        lambda: 0.001,
+        learning_step: 1.0
+    };
+
+    println!("training...");
+    model.train(&data, &labels, 10, 100);
 }
 
 fn testing() {

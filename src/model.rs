@@ -135,6 +135,9 @@ impl Model {
     //  TODO refactor it looks like ass
     pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
         for epoch in 0..epochs {
+            let acc = self.accuracy(data, labels);
+            println!("acc : {}", acc);
+            println!("Iteration : {}", epoch);
             let index_table = generate_vec_rand_unique(data.height as u32);
             let index_matrix: Matrix = generate_batch_index(index_table, batch_size);
 
@@ -158,5 +161,38 @@ impl Model {
                 self.update_params(&d_score, &batch_data);
             }
         }
+    }
+
+    pub fn accuracy(&mut self, data: &Matrix, labels: &Matrix) -> f64 {
+        let score = self.evaluate(data);
+        let answer = Self::answer(&score);
+
+        let mut sum = 0;
+        for index in 0..answer.width {
+            if answer.data[0][index] == labels.data[0][index] {
+                sum+=1;
+            }
+        }
+
+        sum as f64 / answer.width as f64
+    }
+
+    pub fn answer(score: &Matrix) -> Matrix {
+        let mut output: Matrix = Matrix::new(1, score.height);
+        for r in 0..score.height {
+            let mut index_max: u32 = 0;
+            let mut last_max: f64 = 0.0;
+            for c in 0..score.width {
+                if score.data[r][c] > last_max {
+                    last_max = score.data[r][c];
+                    index_max = c as u32;
+                }
+
+            }
+
+            output.data[0][r] = index_max as f64;
+        }
+
+        output
     }
 }

@@ -1,4 +1,5 @@
 use crate::activation::*;
+use crate::config::DEBUG;
 use crate::layers::*;
 use crate::loss::*;
 use crate::matrix::*;
@@ -15,20 +16,44 @@ pub struct Model {
 // doing so for ease of read
 impl Model {
     pub fn evaluate(&mut self, input: &Matrix) -> Matrix {
+        if DEBUG {
+            println!("##### Begining evaluation #####");
+            println!("Evaluation input : ");
+            input.display();
+            println!("");
+        }
+
         let mut index: u32 = 0;
         let mut tmp: Matrix = Matrix::new(0, 0);
         for layer in self.layers.iter_mut() {
+
             if index == 0 {
                 tmp = layer.forward(input);
             } else {
                 tmp = layer.forward(&tmp);
             }
 
-            //println!("evaluating index : {}", index);
-            //tmp.display();
+            if DEBUG {
+                println!("evaluation index : {}", index);
+                println!("tmp evaluation matrix : ");
+                tmp.display();
+                println!("");
+            }
+
             index += 1;
         }
-        softmax(&tmp)
+
+
+        let output = softmax(&tmp);
+
+        if DEBUG {
+            println!("Evaluation output : ");
+            output.display();
+            println!("");
+            println!("##### Ending evaluation #####");
+        }
+
+        output
     }
 
     // implementing cross-entropy and L2 regulariztion
@@ -70,6 +95,10 @@ impl Model {
         let mut index: usize = self.layers.len() - 1;
         let mut d_z: Matrix = d_score.clone();
 
+        if DEBUG {
+            println!("##### Update params #####");
+        }
+
         loop {
             let mut previous_layer: Option<Layer> = None;
 
@@ -82,35 +111,32 @@ impl Model {
                 Some(layer) => layer.output
             };
 
+            if DEBUG {
+                println!("layer index : {}", index);
+                println!("z_minus_1 : ");
+                z_minus_1.display();
+                println!("");
+                println!("d_z : ");
+                d_z.display();
+                println!("");
+            }
+
             let d_w: Matrix = z_minus_1.t().dot(&d_z).div(input.height as f64);
             d_w.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
 
             let d_b: Matrix = d_z.sum_rows().div(input.height as f64);
 
+            if DEBUG {
+                println!("d_w : ");
+                d_w.display();
+                println!("");
+                println!("d_b : ");
+                d_b.display();
+                println!("");
+            }
+
             self.layers[index].update_weigths(&d_w, self.learning_step);
             self.layers[index].update_biases(&d_b, self.learning_step);
-
-            //println!("layer number {}", index+1);
-            // println!("weights $$$$$$$$$$$$$$$$");
-            // self.layers[index].weights_t.display();
-            // println!("biases $$$$$$$$$$$$$$");
-            // self.layers[index].biases.display();
-
-
-            // println!("Debug update params");
-            // println!("layer number {}", index+1);
-            // println!("d_z");
-            // d_z.display();
-            // println!("d_w");
-            // d_w.display();
-            // println!("d_b");
-            // d_b.display();
-
-            // println!("d_z height {} width {}", d_z.height, d_z.width);
-            // println!("d_w height {} width {}", d_w.height, d_w.width);
-            // println!("d_b height {} width {}", d_b.height, d_b.width);
-
-            //println!("god have merccyyyyy");
 
             d_z = d_z.dot(&self.layers[index].weights_t.t());
             
@@ -134,12 +160,21 @@ impl Model {
     //  TODO i should really implement Matrix<T>
     //  TODO refactor it looks like ass
     pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
+
+        if DEBUG {
+            println!("##### Begining Training #####");
+        }
+
         for epoch in 0..epochs {
-            let acc = self.accuracy(data, labels);
-            println!("acc : {}", acc);
-            println!("Iteration : {}", epoch);
             let index_table = generate_vec_rand_unique(data.height as u32);
-            let index_matrix: Matrix = generate_batch_index(index_table, batch_size);
+            let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
+
+            if DEBUG {
+                println!("Epoch number : {}", epoch);
+                println!("Index matrix :"); 
+                index_matrix.display();
+                println!("");
+            }
 
             for batch_indexes in index_matrix.data {
                 let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
@@ -151,21 +186,41 @@ impl Model {
                     batch_label.data[0][i] = labels.data[0][index];
                 }
 
+                if DEBUG {
+                    println!("Batch indexes");
+                    println!("{:?}", batch_indexes);
+                    println!("Batch data");
+                    batch_data.display();
+                    println!("");
+                    println!("Batch label");
+                    batch_label.display();
+                    println!("");
+                }
+
                 let score: Matrix = self.evaluate(&batch_data);
                 let loss: f64 = self.compute_loss(&score, &batch_label);
 
-                //score.display();
-                println!("loss : {}", loss);
+                println!("Loss : {}", loss);
 
                 let d_score = Model::compute_d_score(&score, &batch_label);
+
+                if DEBUG {
+                    println!("d_score : ");
+                    d_score.display();
+                }
+
                 self.update_params(&d_score, &batch_data);
             }
+        }
+
+        if DEBUG {
+            println!("##### Ending Training #####");
         }
     }
 
     pub fn accuracy(&mut self, data: &Matrix, labels: &Matrix) -> f64 {
         let score = self.evaluate(data);
-        let answer = Self::answer(&score);
+        let answer = Self::evaluation_output(&score);
 
         let mut sum = 0;
         for index in 0..answer.width {
@@ -177,7 +232,7 @@ impl Model {
         sum as f64 / answer.width as f64
     }
 
-    pub fn answer(score: &Matrix) -> Matrix {
+    pub fn evaluation_output(score: &Matrix) -> Matrix {
         let mut output: Matrix = Matrix::new(1, score.height);
         for r in 0..score.height {
             let mut index_max: u32 = 0;

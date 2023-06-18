@@ -12,7 +12,7 @@ pub fn generate_vec_rand_unique(size: u32) -> Vec<u32> {
 
 // not the optimal way to return Matrix with f64s. can be optimised with matrix that accepts
 // generic type
-pub fn generate_batch_index(index_table: Vec<u32>, batch_size: u32) -> Matrix {
+pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Matrix {
     assert!(
         index_table.len() as u32 >= batch_size,
         "Batch size cannot be bigger than training dataset size"

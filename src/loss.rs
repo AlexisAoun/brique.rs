@@ -1,4 +1,5 @@
 use crate::{activation::softmax, Layer, Matrix};
+use crate::config::DEBUG;
 
 pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
     assert_eq!(
@@ -15,20 +16,47 @@ pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
 
 pub fn cross_entropy(output: &Matrix, labels: &Matrix) -> f64 {
     let output_one_hot: Matrix = one_hot_encoding(&output, &labels);
-    let output_softmax: Matrix = softmax(&output_one_hot);
 
-    let mut loss: f64 = 0.0;
-    for c in 0..output_softmax.width {
-        loss += -output_softmax.data[0][c].ln();
+    if DEBUG {
+        println!("#### Begining cross_entropy ####");
+        println!("One hot encoding");
+        output_one_hot.display();
+        println!("");
     }
 
-    loss / output_softmax.width as f64
+    let mut loss: f64 = 0.0;
+    for c in 0..output_one_hot.width {
+        loss += -output_one_hot.data[0][c].ln();
+    }
+
+    let output_loss = loss / output_one_hot.width as f64;
+
+    if DEBUG {
+        println!("cross_entropy loss : {}", output_loss);
+        println!("#### Ending cross_entropy ####");
+    }
+
+    output_loss
 }
 
 pub fn l2_reg(layers: &Vec<Layer>, lambda: f64) -> f64 {
     let mut l2: f64 = 0.0;
+
+    if DEBUG {
+        println!("##### Begining L2 Reg #####");
+    }
+
     for layer in layers {
         l2 += 0.5 * lambda * (layer.weights_t.pow(2).sum());
+        if DEBUG {
+
+            println!("tmp L2 : {}", l2);
+        }
+    }
+
+    if DEBUG {
+        println!("output L2 : {}", l2);
+        println!("##### Ending L2 Reg #####");
     }
 
     l2

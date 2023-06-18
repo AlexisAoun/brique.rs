@@ -1,4 +1,5 @@
 use crate::activation::*;
+use crate::config::DEBUG;
 use crate::matrix::*;
 use crate::utils::*;
 
@@ -46,10 +47,34 @@ impl Layer {
     }
 
     pub fn update_weigths(&mut self, input: &Matrix, learning_step: f64) {
+        if DEBUG {
+            println!("##### Begining Update weights #####");
+            println!("Weigths before : ");
+            self.weights_t.display();
+        }
+
         self.weights_t = self.weights_t.add_two_matrices(&input.mult(learning_step * -1.0));
+
+        if DEBUG {
+            println!("Weigths after : ");
+            self.weights_t.display();
+            println!("##### Ending Update weights #####");
+        }
     }
 
     pub fn update_biases(&mut self, input: &Matrix, learning_step: f64) {
+        if DEBUG {
+            println!("##### Begining Update biases #####");
+            println!("biases before : ");
+            self.biases.display();
+        }
+
         self.biases = self.biases.add_two_matrices(&input.mult(learning_step * -1.0));
+
+        if DEBUG {
+            println!("biases after : ");
+            self.biases.display();
+            println!("##### Ending Update biases #####");
+        }
     }
 }

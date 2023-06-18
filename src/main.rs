@@ -7,6 +7,7 @@ mod tests;
 mod utils;
 mod spiral;
 mod draw_spiral;
+mod config;
 
 use crate::layers::*;
 use crate::matrix::*;
@@ -15,8 +16,10 @@ use crate::utils::*;
 use crate::spiral::*;
 use crate::draw_spiral::*;
 
+
 fn main() {
     spiral_dataset_test();
+    
 }
 
 fn spiral_dataset_test() {
@@ -32,8 +35,7 @@ fn spiral_dataset_test() {
         learning_step: 1.0
     };
 
-    println!("training...");
-    model.train(&data, &labels, 10, 100);
+    model.train(&data, &labels, 50, 1);
 }
 
 fn testing() {

@@ -27,10 +27,10 @@ impl Layer {
         tmp_output = tmp_output.add_value_to_all_rows(&self.biases);
 
         if self.activation {
-            self.output = self.activation(&tmp_output);
-        } else {
-            self.output = tmp_output.clone();
-        }
+            tmp_output = self.activation(&tmp_output);
+        } 
+
+        self.output = tmp_output.clone();
 
         tmp_output
     }

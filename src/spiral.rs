@@ -7,7 +7,7 @@ pub fn generate_spiral_dataset(number_of_points: u32, number_of_classes: u32) ->
     let mut labels: Matrix = Matrix::new(1, height);
 
     for class in 0..number_of_classes {
-        let r: Vec<f64> = linspace(0.0, 1.0, number_of_points);
+        let r: Vec<f64> = linspace(0.1, 1.0, number_of_points);
 
         let a: Vec<f64> = linspace(class as f64 *4.0, (class + 1) as f64 * 4.0, number_of_points);
         let t: Vec<f64> = add_rand_to_vec(&a);

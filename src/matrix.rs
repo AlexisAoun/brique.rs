@@ -184,4 +184,18 @@ impl Matrix {
         print!("-------------");
         print!("\n");
     }
+
+    pub fn convert_to_csv(&self) -> String {
+        let mut output : String = String::new();
+        for i in 0..self.height {
+            for j in 0..self.width {
+                 output.push_str(&self.data[i][j].to_string());
+                 output.push(',');
+            }
+            output.push('\n');
+        }
+
+        output
+    }
+
 }

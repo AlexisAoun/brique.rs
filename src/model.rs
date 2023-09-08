@@ -163,6 +163,8 @@ impl Model {
 
         if DEBUG {
             println!("##### Begining Training #####");
+            println!("data matrix : ");
+            data.display();
         }
 
         for epoch in 0..epochs {

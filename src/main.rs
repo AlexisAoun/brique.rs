@@ -8,6 +8,7 @@ mod utils;
 mod spiral;
 mod draw_spiral;
 mod config;
+mod log_into_csv;
 
 use crate::layers::*;
 use crate::matrix::*;
@@ -15,27 +16,47 @@ use crate::model::*;
 use crate::utils::*;
 use crate::spiral::*;
 use crate::draw_spiral::*;
+use crate::log_into_csv::*;
 
 
 fn main() {
-    spiral_dataset_test();
-    
+    //spiral_dataset_test();
+    test_csv();
+}
+
+fn test_csv() {
+    let mut m4: Matrix = Matrix::new(3, 3);
+
+    m4.data[0][0] = 3.0;
+    m4.data[0][1] = 7.0;
+    m4.data[0][2] = -3.2;
+
+    m4.data[1][0] = 3.0;
+    m4.data[1][1] = 4.0;
+    m4.data[1][2] = 2.2;
+
+    m4.data[2][0] = 0.0;
+    m4.data[2][1] = -0.4;
+    m4.data[2][2] = 2.6;
+
+    log_into_csv::log_matrix_into_csv("matrice 1", &m4);
+    log_into_csv::log_matrix_into_csv("the same matrix", &m4);
 }
 
 fn spiral_dataset_test() {
     println!("generating spiral dataset");
 
-    let (data, labels) = generate_spiral_dataset(100, 3);
+    let (data, labels) = generate_spiral_dataset(3, 3);
 
-    let layer1 = Layer::init(2, 100, true);
-    let layer2 = Layer::init(100, 3, false);
+    let layer1 = Layer::init(2, 3, true);
+    let layer2 = Layer::init(3, 3, false);
     let mut model = Model {
         layers: vec![layer1, layer2],
         lambda: 0.001,
         learning_step: 1.0
     };
 
-    model.train(&data, &labels, 50, 1);
+    model.train(&data, &labels, 3, 1);
 }
 
 fn testing() {

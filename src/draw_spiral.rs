@@ -4,7 +4,7 @@ use crate::spiral::*;
 pub fn draw_test() {
     let (data, labels) = generate_spiral_dataset(100, 3);
 
-    let root_area = BitMapBackend::new("spiral_dataset_vis.png", (600, 400))
+    let root_area = BitMapBackend::new("spiral_dataset_vis_2.png", (600, 400))
     .into_drawing_area();
     root_area.fill(&WHITE).unwrap();
 

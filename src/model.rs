@@ -4,6 +4,7 @@ use crate::layers::*;
 use crate::loss::*;
 use crate::matrix::*;
 use crate::utils::*;
+use crate::log_into_csv::log_matrix_into_csv;
 
 pub struct Model {
     pub layers: Vec<Layer>,
@@ -17,10 +18,7 @@ pub struct Model {
 impl Model {
     pub fn evaluate(&mut self, input: &Matrix) -> Matrix {
         if DEBUG {
-            println!("##### Begining evaluation #####");
-            println!("Evaluation input : ");
-            input.display();
-            println!("");
+            log_matrix_into_csv("Begining evaluation : evaluation input", &input)
         }
 
         let mut index: u32 = 0;
@@ -34,10 +32,8 @@ impl Model {
             }
 
             if DEBUG {
-                println!("evaluation index : {}", index);
-                println!("tmp evaluation matrix : ");
-                tmp.display();
-                println!("");
+                let title = format!("evaluation index : {}, tmp evaluation matrix : ", index);
+                log_matrix_into_csv(&title, &tmp);
             }
 
             index += 1;
@@ -47,10 +43,7 @@ impl Model {
         let output = softmax(&tmp);
 
         if DEBUG {
-            println!("Evaluation output : ");
-            output.display();
-            println!("");
-            println!("##### Ending evaluation #####");
+            log_matrix_into_csv("Ending of evaluation, evaluation output : ", &output);
         }
 
         output
@@ -66,9 +59,9 @@ impl Model {
         for r in 0..score.height {
             for c in 0..score.width {
                 if labels.data[0][r] == c as f64 {
-                    output.data[r][c] = score.data[r][c] - 1.0;
+                    output.data[r][c] = (score.data[r][c] - 1.0) / score.height as f64;
                 } else {
-                    output.data[r][c] = score.data[r][c];
+                    output.data[r][c] = score.data[r][c] / score.height as f64;
                 }
             }
         }
@@ -76,11 +69,11 @@ impl Model {
         output
     }
 
-    pub fn compute_d_relu(input: &Matrix) -> Matrix {
+    pub fn compute_d_relu(input: &Matrix, z_minus_1: &Matrix) -> Matrix {
         let mut output: Matrix = Matrix::new(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {
-                if input.data[r][c] < 0.0 {
+                if z_minus_1.data[r][c] <= 0.0 {
                     output.data[r][c] = 0.0;
                 } else {
                     output.data[r][c] = input.data[r][c];
@@ -95,10 +88,6 @@ impl Model {
         let mut index: usize = self.layers.len() - 1;
         let mut d_z: Matrix = d_score.clone();
 
-        if DEBUG {
-            println!("##### Update params #####");
-        }
-
         loop {
             let mut previous_layer: Option<Layer> = None;
 
@@ -112,40 +101,33 @@ impl Model {
             };
 
             if DEBUG {
-                println!("layer index : {}", index);
-                println!("z_minus_1 : ");
-                z_minus_1.display();
-                println!("");
-                println!("d_z : ");
-                d_z.display();
-                println!("");
+                let title = format!("layer index : {}, z_minus_1 : ", index);
+                log_matrix_into_csv(&title, &z_minus_1);
+                log_matrix_into_csv("d_z : ", &d_z);
             }
 
-            let d_w: Matrix = z_minus_1.t().dot(&d_z).div(input.height as f64);
-            d_w.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
+            let d_w_tmp: Matrix = z_minus_1.t().dot(&d_z);
+            let d_w = d_w_tmp.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
 
-            let d_b: Matrix = d_z.sum_rows().div(input.height as f64);
+            let d_b: Matrix = d_z.sum_rows();
 
             if DEBUG {
-                println!("d_w : ");
-                d_w.display();
-                println!("");
-                println!("d_b : ");
-                d_b.display();
-                println!("");
+                log_matrix_into_csv("d_w : ", &d_w);
+                log_matrix_into_csv("d_b : ", &d_b);
+                log_matrix_into_csv("reg * W = ", &self.layers[index].weights_t.mult(self.lambda));
             }
+
+            d_z = d_z.dot(&self.layers[index].weights_t.t());
 
             self.layers[index].update_weigths(&d_w, self.learning_step);
             self.layers[index].update_biases(&d_b, self.learning_step);
-
-            d_z = d_z.dot(&self.layers[index].weights_t.t());
             
             if index == 0 {
                 break;
             }
 
             if self.layers[index - 1].activation {
-                d_z = Model::compute_d_relu(&d_z);
+                d_z = Model::compute_d_relu(&d_z, &z_minus_1);
             }
 
             index-=1;
@@ -162,9 +144,7 @@ impl Model {
     pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
 
         if DEBUG {
-            println!("##### Begining Training #####");
-            println!("data matrix : ");
-            data.display();
+            log_matrix_into_csv("Begining training, data matrix : ", &data);
         }
 
         for epoch in 0..epochs {
@@ -172,10 +152,8 @@ impl Model {
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
 
             if DEBUG {
-                println!("Epoch number : {}", epoch);
-                println!("Index matrix :"); 
-                index_matrix.display();
-                println!("");
+                let title = format!("Epoch number : {}, index matrix : ", epoch);
+                log_matrix_into_csv(&title, &index_matrix);
             }
 
             for batch_indexes in index_matrix.data {
@@ -189,34 +167,27 @@ impl Model {
                 }
 
                 if DEBUG {
-                    println!("Batch indexes");
-                    println!("{:?}", batch_indexes);
-                    println!("Batch data");
-                    batch_data.display();
-                    println!("");
-                    println!("Batch label");
-                    batch_label.display();
-                    println!("");
+                    let title = format!("Batch indexes : {:?}, batch data : ", batch_indexes);
+                    log_matrix_into_csv(&title, &batch_data);
+                    log_matrix_into_csv("batch_label : ", &batch_label);
                 }
 
                 let score: Matrix = self.evaluate(&batch_data);
                 let loss: f64 = self.compute_loss(&score, &batch_label);
+                let acc: f64 = self.accuracy(&batch_data, &batch_label);
 
-                println!("Loss : {}", loss);
+                if epoch % 100 == 0 {
+                    println!("Iteration : {}, Loss : {}, Acc : {}", epoch, loss, acc);
+                }
 
                 let d_score = Model::compute_d_score(&score, &batch_label);
 
                 if DEBUG {
-                    println!("d_score : ");
-                    d_score.display();
+                    log_matrix_into_csv("d_score : ", &d_score);
                 }
 
                 self.update_params(&d_score, &batch_data);
             }
-        }
-
-        if DEBUG {
-            println!("##### Ending Training #####");
         }
     }
 

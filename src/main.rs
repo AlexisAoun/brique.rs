@@ -20,8 +20,7 @@ use crate::log_into_csv::*;
 
 
 fn main() {
-    //spiral_dataset_test();
-    test_csv();
+    spiral_dataset_test();
 }
 
 fn test_csv() {
@@ -43,7 +42,7 @@ fn test_csv() {
     log_into_csv::log_matrix_into_csv("the same matrix", &m4);
 }
 
-fn spiral_dataset_test() {
+fn spiral_dataset_test_debug() {
     println!("generating spiral dataset");
 
     let (data, labels) = generate_spiral_dataset(3, 3);
@@ -57,6 +56,22 @@ fn spiral_dataset_test() {
     };
 
     model.train(&data, &labels, 3, 1);
+}
+
+fn spiral_dataset_test() {
+    println!("generating spiral dataset");
+
+    let (data, labels) = generate_spiral_dataset(100, 3);
+
+    let layer1 = Layer::init(2, 100, true);
+    let layer2 = Layer::init(100, 3, false);
+    let mut model = Model {
+        layers: vec![layer1, layer2],
+        lambda: 0.001,
+        learning_step: 1.0
+    };
+
+    model.train(&data, &labels, 300, 10000);
 }
 
 fn testing() {

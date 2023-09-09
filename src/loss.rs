@@ -1,5 +1,6 @@
 use crate::{activation::softmax, Layer, Matrix};
 use crate::config::DEBUG;
+use crate::log_matrix_into_csv;
 
 pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
     assert_eq!(
@@ -18,10 +19,7 @@ pub fn cross_entropy(output: &Matrix, labels: &Matrix) -> f64 {
     let output_one_hot: Matrix = one_hot_encoding(&output, &labels);
 
     if DEBUG {
-        println!("#### Begining cross_entropy ####");
-        println!("One hot encoding");
-        output_one_hot.display();
-        println!("");
+        log_matrix_into_csv("Begining cross_entropy, one hot encoding : ", &output_one_hot);
     }
 
     let mut loss: f64 = 0.0;
@@ -33,7 +31,6 @@ pub fn cross_entropy(output: &Matrix, labels: &Matrix) -> f64 {
 
     if DEBUG {
         println!("cross_entropy loss : {}", output_loss);
-        println!("#### Ending cross_entropy ####");
     }
 
     output_loss

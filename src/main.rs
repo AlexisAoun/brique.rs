@@ -79,22 +79,38 @@ fn testing() {
     let labels: Matrix = extract_labels("data/train-labels.idx1-ubyte");
     let images: Matrix = extract_images("data/train-images.idx3-ubyte");
 
-    let mut test_imags: Matrix = Matrix::new(20, 28 * 28);
-    let mut test_labels: Matrix = Matrix::new(1, 20);
+    let normalized_images : Matrix = images.normalize();
 
-    for i in 0..20 {
-        test_imags.data[i] = images.data[i].clone();
-        test_labels.data[0][i] = labels.data[0][i];
-    }
+    let layer1 = Layer::init(28 * 28, 64, true);
+    let layer3 = Layer::init(64, 10, false);
 
-    // println!("{}", labels.data[0][781]);
+    let mut model = Model {
+        layers: vec![layer1, layer3],
+        lambda: 0.0001,
+        learning_step: 0.001,
+    };
+
+    println!("training...");
+    model.train(&normalized_images, &labels, 128, 5);
+
+    // for i in 0..20 {
+    //     test_imags.data[i] = images.data[i].clone();
+    //     test_labels.data[0][i] = labels.data[0][i];
+    // }
+    //
+    // println!("{}", labels.data[0][469]);
     //
     // for i in 0..28 * 28 {
-    //     if images.data[781][i] > 0f64 {
+    //     if normalized_images.data[1111][i] > 0.5 && normalized_images.data[1111][i] < 1.0 {
     //         if i % 28 == 0 {
     //             print!("\n");
     //         }
-    //         print!("*");
+    //
+    //         if normalized_images.data[1111][i] > 0.5 && normalized_images.data[1111][i] < 0.75  {
+    //             print!("-");
+    //         } else {
+    //             print!("*");
+    //         }
     //     } else {
     //         if i % 28 == 0 {
     //             print!("\n");
@@ -102,70 +118,4 @@ fn testing() {
     //         print!("_");
     //     }
     // }
-    //
-    // print!("\n");
-    //
-    // let mut m4: Matrix = Matrix::new(3, 3);
-    // let mut m5: Matrix = Matrix::new(3, 1);
-    //
-    // m4.data[0][0] = 3.0;
-    // m4.data[0][1] = 7.0;
-    // m4.data[0][2] = -3.2;
-    //
-    // m4.data[1][0] = 3.0;
-    // m4.data[1][1] = 4.0;
-    // m4.data[1][2] = 2.2;
-    //
-    // m4.data[2][0] = 0.0;
-    // m4.data[2][1] = -0.4;
-    // m4.data[2][2] = 2.6;
-    //
-    //
-    // m4.display();
-    // println!("{}",m4.sum() );
-    // m5.data[0][0] = 1.0;
-    // m5.data[1][0] = -1.0;
-    // m5.data[2][0] = 1.0;
-    //
-    // m4.display();
-    // let m4_bis = softmax(&m4);
-    // m4_bis.display();
-    //
-    //
-    // for i in 0..3 {
-    //     let s: f64 = m4_bis.data[i].iter().sum();
-    //     println!("{}",s);
-    // }
-
-    // let test2 = m4.add_value_to_all_columns(&m5);
-    // test2.display();
-    //
-    // let test_layer: ActivationLayer = ActivationLayer {};
-    //
-    // let test = test_layer.forward(&m5);
-    // test.display();
-
-    let layer1 = Layer::init(28 * 28, 20, true);
-    let layer3 = Layer::init(20, 10, false);
-    let mut model = Model {
-        layers: vec![layer1, layer3],
-        lambda: 0.0001,
-        learning_step: 0.005
-    };
-
-    //  let input_data: Matrix = Matrix::init_rand(20, 5);
-    //  let input_labels: Matrix = Matrix::init_rand(1, 20);
-    //
-    //  println!("input data--------");
-    //  input_data.display();
-
-    println!("training...");
-    model.train(&test_imags, &test_labels, 5, 1);
-
-    //
-    // let output = test_compute_layer.forward(&m6);
-    // test_compute_layer.weights_t.display();
-    // test_compute_layer.biases.display();
-    // m6.display();
-    // output.display();
 }

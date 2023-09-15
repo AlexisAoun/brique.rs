@@ -67,6 +67,29 @@ impl Matrix {
         res
     }
 
+    pub fn normalize(&self) -> Matrix {
+        let mut output: Matrix = Matrix::new(self.height, self.width);
+
+        // get the maximum
+        let mut max : f64 = 0.0;
+        for r in 0..self.height {
+            for c in 0..self.width {
+                if self.data[r][c] > max {
+                    max = self.data[r][c];
+                }
+            }
+        }
+
+        // normalize
+        for r in 0..self.height {
+            for c in 0..self.width {
+                output.data[r][c] = self.data[r][c] / max;
+            }
+        }
+
+        output
+    }
+
     // transpose
     pub fn t(&self) -> Matrix {
         let mut output: Matrix = Matrix::new(self.width, self.height);

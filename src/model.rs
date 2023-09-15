@@ -148,6 +148,12 @@ impl Model {
         }
 
         for epoch in 0..epochs {
+            let mut avg_loss : f64 = 0.0;
+            let mut avg_acc : f64 = 0.0;
+
+            let mut sum_loss : f64 = 0.0;
+            let mut sum_acc : f64 = 0.0;
+
             let index_table = generate_vec_rand_unique(data.height as u32);
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
 
@@ -155,6 +161,8 @@ impl Model {
                 let title = format!("Epoch number : {}, index matrix : ", epoch);
                 log_matrix_into_csv(&title, &index_matrix);
             }
+
+            let mut batch_number = 0;
 
             for batch_indexes in index_matrix.data {
                 let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
@@ -176,8 +184,19 @@ impl Model {
                 let loss: f64 = self.compute_loss(&score, &batch_label);
                 let acc: f64 = self.accuracy(&batch_data, &batch_label);
 
-                if epoch % 100 == 0 {
-                    println!("Iteration : {}, Loss : {}, Acc : {}", epoch, loss, acc);
+                sum_loss += loss;
+                sum_acc += acc;
+
+                if batch_number == 0 {
+                    avg_loss = loss;
+                    avg_acc = acc;
+                } else {
+                    avg_loss = sum_loss / batch_number as f64;
+                    avg_acc = sum_acc / batch_number as f64;
+                }
+
+                if  batch_number % 100 == 0 {
+                    println!("Iteration : {}, Batch_number : {}, Loss : {}, Acc : {}", epoch, batch_number, avg_loss, avg_acc);
                 }
 
                 let d_score = Model::compute_d_score(&score, &batch_label);
@@ -187,6 +206,7 @@ impl Model {
                 }
 
                 self.update_params(&d_score, &batch_data);
+                batch_number += 1;
             }
         }
     }

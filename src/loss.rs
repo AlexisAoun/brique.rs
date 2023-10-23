@@ -44,6 +44,9 @@ pub fn l2_reg(layers: &Vec<Layer>, lambda: f64) -> f64 {
     }
 
     for layer in layers {
+        if DEBUG {
+            log_matrix_into_csv("computing L2 reg; weights : ", &layer.weights_t);
+        }
         l2 += 0.5 * lambda * (layer.weights_t.pow(2).sum());
         if DEBUG {
 

@@ -6,13 +6,19 @@ pub fn parse_test_csv() {
 
    let binary = read("testing_data.csv").unwrap();
 
-   let binary_split = binary.split(|&v| v == 10 as u8);
+   let rows : Vec<_> = binary.split(|&v| v == 10 as u8).collect();
 
-   let a:Vec<_> = tmp.collect();
-   println!("{:?}", a);
+   for r in rows {
+       if r.len() > 0 {
+            println!("{:?}", tokenizer_f64(std::str::from_utf8(r).unwrap()));
+       }
+   } 
 
-   let s = std::str::from_utf8(&res).unwrap();
+}
 
-   println!("{:?}", res);
-   println!("{:?}", s);
+pub fn tokenizer_f64(line : &str) -> Vec<f64> {
+    line.split(",").filter_map(|s| match s.parse::<f64>() {
+        Ok(res) => Some(res),
+        Err(e) => panic!("CSV tockenizer error, {:?}", e)
+    }).collect::<Vec<_>>()
 }

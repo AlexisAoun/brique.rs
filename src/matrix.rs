@@ -19,6 +19,26 @@ impl Matrix {
         }
     }
 
+    pub fn init(height: usize, width: usize, data: Vec<f64>) -> Matrix {
+
+        assert_eq!(height*width, data.len(), "Error while initiating a matrix with data : 
+                   not compatible with the dimension");
+
+        let mut output = Self::new(height, width); 
+
+        let mut index:usize = 0;
+        for i in data {
+            let c:usize = index % width;
+            let r:usize = index / width;
+
+            output.data[r][c] = i;
+            index+=1;
+        }
+
+        output
+
+    }
+
     pub fn init_rand(height: usize, width: usize) -> Matrix {
         let mut output = Self::new(height, width);
 

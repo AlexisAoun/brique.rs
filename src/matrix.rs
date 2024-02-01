@@ -20,23 +20,25 @@ impl Matrix {
     }
 
     pub fn init(height: usize, width: usize, data: Vec<f64>) -> Matrix {
+        assert_eq!(
+            height * width,
+            data.len(),
+            "Error while initiating a matrix with data : 
+                   not compatible with the dimension"
+        );
 
-        assert_eq!(height*width, data.len(), "Error while initiating a matrix with data : 
-                   not compatible with the dimension");
+        let mut output = Self::new(height, width);
 
-        let mut output = Self::new(height, width); 
-
-        let mut index:usize = 0;
+        let mut index: usize = 0;
         for i in data {
-            let c:usize = index % width;
-            let r:usize = index / width;
+            let c: usize = index % width;
+            let r: usize = index / width;
 
             output.data[r][c] = i;
-            index+=1;
+            index += 1;
         }
 
         output
-
     }
 
     pub fn init_rand(height: usize, width: usize) -> Matrix {
@@ -91,7 +93,7 @@ impl Matrix {
         let mut output: Matrix = Matrix::new(self.height, self.width);
 
         // get the maximum
-        let mut max : f64 = 0.0;
+        let mut max: f64 = 0.0;
         for r in 0..self.height {
             for c in 0..self.width {
                 if self.data[r][c] > max {
@@ -179,7 +181,6 @@ impl Matrix {
         output
     }
 
-    
     pub fn div(&self, value: f64) -> Matrix {
         assert_ne!(value, 0.0, "Divide by 0 matrix error");
         let mut output: Matrix = Matrix::new(self.height, self.width);
@@ -202,7 +203,10 @@ impl Matrix {
     }
 
     pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
-        assert!(self.height == m.height && self.width == m.width, "The two matrices should have the same dimensions");
+        assert!(
+            self.height == m.height && self.width == m.width,
+            "The two matrices should have the same dimensions"
+        );
         let mut res: Matrix = Matrix::new(self.height, self.width);
 
         for r in 0..self.height {
@@ -229,16 +233,15 @@ impl Matrix {
     }
 
     pub fn convert_to_csv(&self) -> String {
-        let mut output : String = String::new();
+        let mut output: String = String::new();
         for i in 0..self.height {
             for j in 0..self.width {
-                 output.push_str(&self.data[i][j].to_string());
-                 output.push(',');
+                output.push_str(&self.data[i][j].to_string());
+                output.push(',');
             }
             output.push('\n');
         }
 
         output
     }
-
 }

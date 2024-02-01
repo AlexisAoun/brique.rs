@@ -1,19 +1,19 @@
 use crate::activation::*;
 use crate::config::DEBUG;
 use crate::layers::*;
+use crate::log_into_csv::log_matrix_into_csv;
 use crate::loss::*;
 use crate::matrix::*;
 use crate::utils::*;
-use crate::log_into_csv::log_matrix_into_csv;
 
 pub struct Model {
     pub layers: Vec<Layer>,
     pub lambda: f64,
-    pub learning_step: f64
+    pub learning_step: f64,
 }
 
-// all the variables begining with d (like d_score) are the derivative 
-// of the loss function compared to said variable, so d_score is d Loss/ d Score 
+// all the variables begining with d (like d_score) are the derivative
+// of the loss function compared to said variable, so d_score is d Loss/ d Score
 // doing so for ease of read
 impl Model {
     pub fn evaluate(&mut self, input: &Matrix) -> Matrix {
@@ -24,7 +24,6 @@ impl Model {
         let mut index: u32 = 0;
         let mut tmp: Matrix = Matrix::new(0, 0);
         for layer in self.layers.iter_mut() {
-
             if index == 0 {
                 tmp = layer.forward(input);
             } else {
@@ -38,7 +37,6 @@ impl Model {
 
             index += 1;
         }
-
 
         let output = softmax(&tmp);
 
@@ -92,12 +90,12 @@ impl Model {
             let mut previous_layer: Option<Layer> = None;
 
             if index > 0 {
-                previous_layer = Some(self.layers[index-1].clone());
-            } 
+                previous_layer = Some(self.layers[index - 1].clone());
+            }
 
             let z_minus_1: Matrix = match previous_layer {
                 None => input.clone(),
-                Some(layer) => layer.output
+                Some(layer) => layer.output,
             };
 
             if DEBUG {
@@ -114,14 +112,17 @@ impl Model {
             if DEBUG {
                 log_matrix_into_csv("d_w : ", &d_w);
                 log_matrix_into_csv("d_b : ", &d_b);
-                log_matrix_into_csv("reg * W = ", &self.layers[index].weights_t.mult(self.lambda));
+                log_matrix_into_csv(
+                    "reg * W = ",
+                    &self.layers[index].weights_t.mult(self.lambda),
+                );
             }
 
             d_z = d_z.dot(&self.layers[index].weights_t.t());
 
             self.layers[index].update_weigths(&d_w, self.learning_step);
             self.layers[index].update_biases(&d_b, self.learning_step);
-            
+
             if index == 0 {
                 break;
             }
@@ -130,9 +131,8 @@ impl Model {
                 d_z = Model::compute_d_relu(&d_z, &z_minus_1);
             }
 
-            index-=1;
+            index -= 1;
         }
-
     }
 
     // the steps :
@@ -142,17 +142,16 @@ impl Model {
     //  TODO i should really implement Matrix<T>
     //  TODO refactor it looks like ass
     pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
-
         if DEBUG {
             log_matrix_into_csv("Begining training, data matrix : ", &data);
         }
 
         for epoch in 0..epochs {
-            let mut avg_loss : f64 = 0.0;
-            let mut avg_acc : f64 = 0.0;
+            let mut avg_loss: f64 = 0.0;
+            let mut avg_acc: f64 = 0.0;
 
-            let mut sum_loss : f64 = 0.0;
-            let mut sum_acc : f64 = 0.0;
+            let mut sum_loss: f64 = 0.0;
+            let mut sum_acc: f64 = 0.0;
 
             let index_table = generate_vec_rand_unique(data.height as u32);
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
@@ -195,8 +194,11 @@ impl Model {
                     avg_acc = sum_acc / batch_number as f64;
                 }
 
-                if  batch_number % 100 == 0 {
-                    println!("Iteration : {}, Batch_number : {}, Loss : {}, Acc : {}", epoch, batch_number, avg_loss, avg_acc);
+                if batch_number % 100 == 0 {
+                    println!(
+                        "Iteration : {}, Batch_number : {}, Loss : {}, Acc : {}",
+                        epoch, batch_number, avg_loss, avg_acc
+                    );
                 }
 
                 let d_score = Model::compute_d_score(&score, &batch_label);
@@ -218,7 +220,7 @@ impl Model {
         let mut sum = 0;
         for index in 0..answer.width {
             if answer.data[0][index] == labels.data[0][index] {
-                sum+=1;
+                sum += 1;
             }
         }
 
@@ -235,7 +237,6 @@ impl Model {
                     last_max = score.data[r][c];
                     index_max = c as u32;
                 }
-
             }
 
             output.data[0][r] = index_max as f64;

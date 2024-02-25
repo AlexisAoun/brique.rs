@@ -8,18 +8,17 @@ use crate::matrix::Matrix;
 pub fn parse_test_csv() {
     let binary = read("testing_data.csv").unwrap();
 
-    println!("{:?}", binary);
-
     let rows: Vec<_> = binary.split(|&v| v == 10 as u8).collect();
     let mut extracted_data: Vec<f64> = vec![];
 
     let mut height: usize = 0;
     let mut width: usize = 0;
 
+    let mut test_matrices: Vec<Matrix> = vec![];
+
     for r in rows {
         if is_line_empty(r) {
-            let test: Matrix = Matrix::init(height, width, extracted_data.clone());
-            test.display();
+            test_matrices.push(Matrix::init(height, width, extracted_data.clone())) ;
 
             extracted_data = vec![];
             width = 0;
@@ -28,7 +27,6 @@ pub fn parse_test_csv() {
         }
 
         if r.len() > 0 {
-            println!("{:?}", tokenizer_f64(std::str::from_utf8(r).unwrap()));
 
             let mut tmp: Vec<f64> = tokenizer_f64(std::str::from_utf8(r).unwrap());
             if width == 0 {
@@ -40,6 +38,8 @@ pub fn parse_test_csv() {
             height += 1;
         }
     }
+
+    test_matrices.into_iter().for_each(|x| x.display());
 }
 
 pub fn tokenizer_f64(line: &str) -> Vec<f64> {

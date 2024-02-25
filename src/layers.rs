@@ -23,6 +23,16 @@ impl Layer {
         }
     }
 
+    pub fn init_test(input_size: u32, size: u32, activation: bool, weights_t: Matrix) -> Layer {
+        Layer {
+            weights_t,
+            biases: Matrix::new(1, size.try_into().unwrap()),
+            activation,
+            output: Matrix::new(0, 0),
+        }
+
+    }
+
     pub fn forward(&mut self, input: &Matrix) -> Matrix {
         let mut tmp_output = input.dot(&self.weights_t);
         tmp_output = tmp_output.add_value_to_all_rows(&self.biases);

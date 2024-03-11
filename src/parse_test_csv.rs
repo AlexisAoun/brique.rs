@@ -5,8 +5,8 @@ use crate::matrix::Matrix;
 // 44 -> ,
 // 10 -> \n
 // 32 -> space
-pub fn parse_test_csv() {
-    let binary = read("testing_data.csv").unwrap();
+pub fn parse_test_csv(file_name: String) -> Vec<Matrix> {
+    let binary = read(file_name).unwrap();
 
     let rows: Vec<_> = binary.split(|&v| v == 10 as u8).collect();
     let mut extracted_data: Vec<f64> = vec![];
@@ -14,11 +14,11 @@ pub fn parse_test_csv() {
     let mut height: usize = 0;
     let mut width: usize = 0;
 
-    let mut test_matrices: Vec<Matrix> = vec![];
+    let mut output_matrices: Vec<Matrix> = vec![];
 
     for r in rows {
         if is_line_empty(r) {
-            test_matrices.push(Matrix::init(height, width, extracted_data.clone())) ;
+            output_matrices.push(Matrix::init(height, width, extracted_data.clone())) ;
 
             extracted_data = vec![];
             width = 0;
@@ -39,7 +39,7 @@ pub fn parse_test_csv() {
         }
     }
 
-    test_matrices.into_iter().for_each(|x| x.display());
+    output_matrices
 }
 
 pub fn tokenizer_f64(line: &str) -> Vec<f64> {

@@ -20,7 +20,7 @@ use crate::spiral::*;
 use crate::utils::*;
 
 fn main() {
-    parse_test_csv();
+    spiral_dataset_test();
 }
 
 fn spiral_dataset_test_debug() {
@@ -45,9 +45,9 @@ fn spiral_dataset_test() {
 
     let (data, labels) = generate_spiral_dataset(100, 3);
 
-    let layer1 = Layer::init(2, 32, true);
-    let layer2 = Layer::init(32, 32, true);
-    let layer3 = Layer::init(32, 3, false);
+    let layer1 = Layer::init(2, 100, true);
+    let layer2 = Layer::init(100, 100, true);
+    let layer3 = Layer::init(100, 3, false);
     let mut model = Model {
         layers: vec![layer1, layer2, layer3],
         lambda: 0.001,

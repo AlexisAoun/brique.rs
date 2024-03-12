@@ -6,6 +6,7 @@ use crate::loss::*;
 use crate::matrix::*;
 use crate::utils::*;
 
+#[derive(Clone)]
 pub struct Model {
     pub layers: Vec<Layer>,
     pub lambda: f64,
@@ -141,7 +142,14 @@ impl Model {
     //  - generate batch from shuffled dataset
     //  TODO i should really implement Matrix<T>
     //  TODO refactor it looks like ass
-    pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32) {
+    pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32, test: bool) -> Option<Vec<Model>> {
+
+        let mut network_history : Option<Vec<Model>> = None;
+
+        if test {
+            network_history = Some(Vec::new());
+        }
+
         if DEBUG {
             log_matrix_into_csv("Begining training, data matrix : ", &data);
         }
@@ -164,6 +172,12 @@ impl Model {
             let mut batch_number = 0;
 
             for batch_indexes in index_matrix.data {
+                if test {
+                    let mut tmp = network_history.expect("network_history should be initialized");
+                    tmp.push(self.clone());
+                    network_history = Some(tmp);
+                }
+
                 let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
                 let mut batch_label: Matrix = Matrix::new(1, batch_size as usize);
 
@@ -211,6 +225,8 @@ impl Model {
                 batch_number += 1;
             }
         }
+
+        network_history
     }
 
     pub fn accuracy(&mut self, data: &Matrix, labels: &Matrix) -> f64 {

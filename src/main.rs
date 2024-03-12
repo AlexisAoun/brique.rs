@@ -37,7 +37,7 @@ fn spiral_dataset_test_debug() {
         learning_step: 1.0,
     };
 
-    model.train(&data, &labels, 3, 1);
+    model.train(&data, &labels, 3, 1, false);
 }
 
 fn spiral_dataset_test() {
@@ -54,7 +54,7 @@ fn spiral_dataset_test() {
         learning_step: 1.0,
     };
 
-    model.train(&data, &labels, 300, 10000);
+    model.train(&data, &labels, 300, 10000, false);
 }
 
 fn testing() {

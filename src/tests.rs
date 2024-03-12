@@ -1,17 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use crate::{Matrix, parse_test_csv::parse_test_csv, model::Model, layers::Layer, config::TEST};
+    use crate::{Matrix, parse_test_csv::parse_test_csv, model::Model, layers::Layer};
 
     #[test]
     fn end_to_end_model_test() {
-        unsafe {
-            TEST = true;
-        }
-
         let number_of_layers = 3;
         let input_weights: Vec<Matrix> = parse_test_csv("test_input_weights.csv".to_string());
+        let test_data : Vec<Matrix> = parse_test_csv("test_data.csv".to_string());
+        let expected_params: Vec<Matrix> = parse_test_csv("expected_params.csv".to_string());
 
         assert_eq!(input_weights.len(), number_of_layers, "The input weight csv doesn't have the expected number of matrices {}", number_of_layers);
+        assert_eq!(test_data.len(), 2, "The test data csv doesn't have the expected number of matrices {}", number_of_layers);
 
         let layer1 = Layer::init_test(2, 3, true, input_weights[0].clone());
         let layer2 = Layer::init_test(3, 3, true, input_weights[1].clone());
@@ -23,20 +22,11 @@ mod tests {
             learning_step: 1.0,
         };
 
-        // TODO Choose how to get the weights and biases at every stages
-        // i should get only the final weights and biases to simplify things a bit
-        // maybe something in the same fashion as the debug env variable i tried
+        let network_history = model.train(&test_data[0], &test_data[1], 3, 2, true);
 
+        //TODO decide how to manage the expected params csv 
+        // iter thru the network_history and do assert_eq using is_equal() from matrix
 
-        // to get the states i have to make it return by the training func
-        // make it return an option, null if test is false
-        // if true an array of n layers multiplied by the number of iterations
-        // giving me a full history of the weights and biases evolution
-
-
-        unsafe {
-            TEST = false;
-        }
     }
 
     fn get_rand_matrix_1() -> Matrix {

@@ -1,16 +1,26 @@
 #[cfg(test)]
 mod tests {
-    use crate::{Matrix, parse_test_csv::parse_test_csv, model::Model, layers::Layer};
+    use crate::{layers::Layer, model::Model, parse_test_csv::parse_test_csv, Matrix};
 
     #[test]
     fn end_to_end_model_test() {
         let number_of_layers = 3;
         let input_weights: Vec<Matrix> = parse_test_csv("test_input_weights.csv".to_string());
-        let test_data : Vec<Matrix> = parse_test_csv("test_data.csv".to_string());
+        let test_data: Vec<Matrix> = parse_test_csv("test_data.csv".to_string());
         let expected_params: Vec<Matrix> = parse_test_csv("expected_params.csv".to_string());
 
-        assert_eq!(input_weights.len(), number_of_layers, "The input weight csv doesn't have the expected number of matrices {}", number_of_layers);
-        assert_eq!(test_data.len(), 2, "The test data csv doesn't have the expected number of matrices {}", number_of_layers);
+        assert_eq!(
+            input_weights.len(),
+            number_of_layers,
+            "The input weight csv doesn't have the expected number of matrices {}",
+            number_of_layers
+        );
+        assert_eq!(
+            test_data.len(),
+            2,
+            "The test data csv doesn't have the expected number of matrices {}",
+            number_of_layers
+        );
 
         let layer1 = Layer::init_test(2, 3, true, input_weights[0].clone());
         let layer2 = Layer::init_test(3, 3, true, input_weights[1].clone());
@@ -24,9 +34,59 @@ mod tests {
 
         let network_history = model.train(&test_data[0], &test_data[1], 3, 2, true);
 
-        //TODO decide how to manage the expected params csv 
+        //TODO decide how to manage the expected params csv
         // iter thru the network_history and do assert_eq using is_equal() from matrix
 
+        let models: Vec<Model> = network_history.unwrap();
+
+        let index: usize = 0;
+        for model in models {
+            assert!(
+                model.layers[0]
+                    .weights_t
+                    .is_equal(&expected_params[index / 3]),
+                "Weights model {}, layer 1, not expected value",
+                index
+            );
+            assert!(
+                model.layers[0]
+                    .biases
+                    .is_equal(&expected_params[index / 3 + 1]),
+                "Biases model {}, layer 1, not expected value",
+                index
+            );
+
+            assert!(
+                model.layers[1]
+                    .weights_t
+                    .is_equal(&expected_params[index / 3 + 2]),
+                "Weights model {}, layer 1, not expected value",
+                index
+            );
+
+            assert!(
+                model.layers[1]
+                    .biases
+                    .is_equal(&expected_params[index / 3 + 3]),
+                "Biases model {}, layer 1, not expected value",
+                index
+            );
+
+            assert!(
+                model.layers[2]
+                    .weights_t
+                    .is_equal(&expected_params[index / 3 + 4]),
+                "Weights model {}, layer 1, not expected value",
+                index
+            );
+            assert!(
+                model.layers[2]
+                    .biases
+                    .is_equal(&expected_params[index / 3 + 5]),
+                "Biases model {}, layer 1, not expected value",
+                index
+            );
+        }
     }
 
     fn get_rand_matrix_1() -> Matrix {

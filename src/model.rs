@@ -11,13 +11,27 @@ pub struct Model {
     pub layers: Vec<Layer>,
     pub lambda: f64,
     pub learning_step: f64,
+
+    // these elements are stored in the struct for debugging purposes
+    // only if debug arg is true
+    pub input: Matrix,
+    pub input_label: Matrix,
+    pub itermediate_evaluation_results: Vec<Matrix>,
+    pub softmax_output: Matrix,
+    pub data_loss: f64,
+    pub reg_loss: f64,
+    pub loss: f64,
+    pub d_score: Matrix,
+    pub d_zs: Vec<Matrix>,
+    pub d_ws: Vec<Matrix>,
+    pub d_bs: Vec<Matrix>,
 }
 
 // all the variables begining with d (like d_score) are the derivative
 // of the loss function compared to said variable, so d_score is d Loss/ d Score
 // doing so for ease of read
 impl Model {
-    pub fn evaluate(&mut self, input: &Matrix) -> Matrix {
+    pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
         if DEBUG {
             log_matrix_into_csv("Begining evaluation : evaluation input", &input)
         }
@@ -36,6 +50,10 @@ impl Model {
                 log_matrix_into_csv(&title, &tmp);
             }
 
+            if debug {
+                self.itermediate_evaluation_results.push(tmp.clone());
+            }
+
             index += 1;
         }
 
@@ -45,11 +63,20 @@ impl Model {
             log_matrix_into_csv("Ending of evaluation, evaluation output : ", &output);
         }
 
+        if debug {
+            self.softmax_output = output.clone();
+        }
+
         output
     }
 
     // implementing cross-entropy and L2 regulariztion
-    pub fn compute_loss(&self, output: &Matrix, labels: &Matrix) -> f64 {
+    pub fn compute_loss(&mut self, output: &Matrix, labels: &Matrix, debug: bool) -> f64 {
+        if debug {
+            self.data_loss = cross_entropy(output, labels);
+            self.reg_loss = l2_reg(&self.layers, self.lambda);
+        }
+
         cross_entropy(output, labels) + l2_reg(&self.layers, self.lambda)
     }
 
@@ -57,10 +84,13 @@ impl Model {
         let mut output: Matrix = Matrix::new(score.height, score.width);
         for r in 0..score.height {
             for c in 0..score.width {
+                //TODO make a choice, to divide or not to divide
                 if labels.data[0][r] == c as f64 {
-                    output.data[r][c] = (score.data[r][c] - 1.0) / score.height as f64;
+                    //output.data[r][c] = (score.data[r][c] - 1.0) / score.height as f64;
+                    output.data[r][c] = (score.data[r][c] - 1.0) as f64;
                 } else {
-                    output.data[r][c] = score.data[r][c] / score.height as f64;
+                    //output.data[r][c] = score.data[r][c] / score.height as f64;
+                    output.data[r][c] = score.data[r][c] as f64;
                 }
             }
         }
@@ -83,7 +113,7 @@ impl Model {
         output
     }
 
-    pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix) {
+    pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix, debug: bool) {
         let mut index: usize = self.layers.len() - 1;
         let mut d_z: Matrix = d_score.clone();
 
@@ -119,6 +149,12 @@ impl Model {
                 );
             }
 
+            if debug {
+                self.d_zs.push(d_z.clone());
+                self.d_ws.push(d_w.clone());
+                self.d_bs.push(d_b.clone());
+            }
+
             d_z = d_z.dot(&self.layers[index].weights_t.t());
 
             self.layers[index].update_weigths(&d_w, self.learning_step);
@@ -142,11 +178,17 @@ impl Model {
     //  - generate batch from shuffled dataset
     //  TODO i should really implement Matrix<T>
     //  TODO refactor it looks like ass
-    pub fn train(&mut self, data: &Matrix, labels: &Matrix, batch_size: u32, epochs: u32, test: bool) -> Option<Vec<Model>> {
+    pub fn train(
+        &mut self,
+        data: &Matrix,
+        labels: &Matrix,
+        batch_size: u32,
+        epochs: u32,
+        debug: bool,
+    ) -> Option<Vec<Model>> {
+        let mut network_history: Option<Vec<Model>> = None;
 
-        let mut network_history : Option<Vec<Model>> = None;
-
-        if test {
+        if debug {
             network_history = Some(Vec::new());
         }
 
@@ -161,7 +203,14 @@ impl Model {
             let mut sum_loss: f64 = 0.0;
             let mut sum_acc: f64 = 0.0;
 
-            let index_table = generate_vec_rand_unique(data.height as u32);
+            let index_table;
+
+            if debug {
+                index_table = (0..data.height as u32).collect();
+            } else {
+                index_table = generate_vec_rand_unique(data.height as u32);
+            }
+
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
 
             if DEBUG {
@@ -172,11 +221,6 @@ impl Model {
             let mut batch_number = 0;
 
             for batch_indexes in index_matrix.data {
-                if test {
-                    let mut tmp = network_history.expect("network_history should be initialized");
-                    tmp.push(self.clone());
-                    network_history = Some(tmp);
-                }
 
                 let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
                 let mut batch_label: Matrix = Matrix::new(1, batch_size as usize);
@@ -187,15 +231,25 @@ impl Model {
                     batch_label.data[0][i] = labels.data[0][index];
                 }
 
-                if DEBUG {
-                    let title = format!("Batch indexes : {:?}, batch data : ", batch_indexes);
-                    log_matrix_into_csv(&title, &batch_data);
-                    log_matrix_into_csv("batch_label : ", &batch_label);
-                }
-
-                let score: Matrix = self.evaluate(&batch_data);
-                let loss: f64 = self.compute_loss(&score, &batch_label);
+                let score: Matrix = self.evaluate(&batch_data, debug);
+                let loss: f64 = self.compute_loss(&score, &batch_label, debug);
                 let acc: f64 = self.accuracy(&batch_data, &batch_label);
+
+                if debug {
+                    self.input = batch_data.clone();
+                    self.input_label = batch_label.clone();
+                    self.loss = loss;
+
+                    let mut tmp = network_history.expect("network_history should be initialized");
+                    tmp.push(self.clone());
+                    network_history = Some(tmp);
+
+                    //reinit bebug vars
+                    self.itermediate_evaluation_results = Vec::new();
+                    self.d_zs = Vec::new();
+                    self.d_ws = Vec::new();
+                    self.d_bs = Vec::new();
+                }
 
                 sum_loss += loss;
                 sum_acc += acc;
@@ -217,11 +271,15 @@ impl Model {
 
                 let d_score = Model::compute_d_score(&score, &batch_label);
 
+                if debug {
+                    self.d_score = d_score.clone();
+                }
+
                 if DEBUG {
                     log_matrix_into_csv("d_score : ", &d_score);
                 }
 
-                self.update_params(&d_score, &batch_data);
+                self.update_params(&d_score, &batch_data, debug);
                 batch_number += 1;
             }
         }
@@ -230,7 +288,7 @@ impl Model {
     }
 
     pub fn accuracy(&mut self, data: &Matrix, labels: &Matrix) -> f64 {
-        let score = self.evaluate(data);
+        let score = self.evaluate(data, false);
         let answer = Self::evaluation_output(&score);
 
         let mut sum = 0;

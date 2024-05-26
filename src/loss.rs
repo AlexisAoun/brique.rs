@@ -18,23 +18,12 @@ pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
 pub fn cross_entropy(output: &Matrix, labels: &Matrix) -> f64 {
     let output_one_hot: Matrix = one_hot_encoding(&output, &labels);
 
-    if DEBUG {
-        log_matrix_into_csv(
-            "Begining cross_entropy, one hot encoding : ",
-            &output_one_hot,
-        );
-    }
-
     let mut loss: f64 = 0.0;
     for c in 0..output_one_hot.width {
         loss += -output_one_hot.data[0][c].ln();
     }
 
     let output_loss = loss / output_one_hot.width as f64;
-
-    if DEBUG {
-        println!("cross_entropy loss : {}", output_loss);
-    }
 
     output_loss
 }

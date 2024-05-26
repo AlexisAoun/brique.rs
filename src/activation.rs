@@ -9,7 +9,16 @@ pub fn relu(input: f64) -> f64 {
 }
 
 pub fn softmax(input: &Matrix) -> Matrix {
-    let input_exp: Matrix = input.exp();
+    let mut input_sub_max: Matrix = Matrix::new(input.height, input.width);
+
+    for r in 0..input.height {
+        let max: &f64 = input.data[r].iter().max_by(|a, b| a.total_cmp(b)).unwrap();
+        for c in 0..input.width {
+            input_sub_max.data[r][c] = input.data[r][c] - max;
+        }
+    }
+
+    let input_exp: Matrix = input_sub_max.exp();
     let mut output: Matrix = Matrix::new(input.height, input.width);
 
     for r in 0..input.height {

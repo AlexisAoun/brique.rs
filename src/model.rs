@@ -1,5 +1,5 @@
 use crate::activation::*;
-use crate::config::DEBUG;
+use crate::layers;
 use crate::layers::*;
 use crate::log_into_csv::log_matrix_into_csv;
 use crate::loss::*;
@@ -14,6 +14,7 @@ pub struct Model {
 
     // these elements are stored in the struct for debugging purposes
     // only if debug arg is true
+    pub layers_debug: Vec<Layer>,
     pub input: Matrix,
     pub input_label: Matrix,
     pub itermediate_evaluation_results: Vec<Matrix>,
@@ -32,9 +33,6 @@ pub struct Model {
 // doing so for ease of read
 impl Model {
     pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
-        if DEBUG {
-            log_matrix_into_csv("Begining evaluation : evaluation input", &input)
-        }
 
         let mut index: u32 = 0;
         let mut tmp: Matrix = Matrix::new(0, 0);
@@ -45,11 +43,6 @@ impl Model {
                 tmp = layer.forward(&tmp);
             }
 
-            if DEBUG {
-                let title = format!("evaluation index : {}, tmp evaluation matrix : ", index);
-                log_matrix_into_csv(&title, &tmp);
-            }
-
             if debug {
                 self.itermediate_evaluation_results.push(tmp.clone());
             }
@@ -58,10 +51,6 @@ impl Model {
         }
 
         let output = softmax(&tmp);
-
-        if DEBUG {
-            log_matrix_into_csv("Ending of evaluation, evaluation output : ", &output);
-        }
 
         if debug {
             self.softmax_output = output.clone();
@@ -129,25 +118,10 @@ impl Model {
                 Some(layer) => layer.output,
             };
 
-            if DEBUG {
-                let title = format!("layer index : {}, z_minus_1 : ", index);
-                log_matrix_into_csv(&title, &z_minus_1);
-                log_matrix_into_csv("d_z : ", &d_z);
-            }
-
             let d_w_tmp: Matrix = z_minus_1.t().dot(&d_z);
             let d_w = d_w_tmp.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
 
             let d_b: Matrix = d_z.sum_rows();
-
-            if DEBUG {
-                log_matrix_into_csv("d_w : ", &d_w);
-                log_matrix_into_csv("d_b : ", &d_b);
-                log_matrix_into_csv(
-                    "reg * W = ",
-                    &self.layers[index].weights_t.mult(self.lambda),
-                );
-            }
 
             if debug {
                 self.d_zs.push(d_z.clone());
@@ -192,10 +166,6 @@ impl Model {
             network_history = Some(Vec::new());
         }
 
-        if DEBUG {
-            log_matrix_into_csv("Begining training, data matrix : ", &data);
-        }
-
         for epoch in 0..epochs {
             let mut avg_loss: f64 = 0.0;
             let mut avg_acc: f64 = 0.0;
@@ -213,15 +183,9 @@ impl Model {
 
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
 
-            if DEBUG {
-                let title = format!("Epoch number : {}, index matrix : ", epoch);
-                log_matrix_into_csv(&title, &index_matrix);
-            }
-
             let mut batch_number = 0;
 
             for batch_indexes in index_matrix.data {
-
                 let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
                 let mut batch_label: Matrix = Matrix::new(1, batch_size as usize);
 
@@ -234,22 +198,6 @@ impl Model {
                 let score: Matrix = self.evaluate(&batch_data, debug);
                 let loss: f64 = self.compute_loss(&score, &batch_label, debug);
                 let acc: f64 = self.accuracy(&batch_data, &batch_label);
-
-                if debug {
-                    self.input = batch_data.clone();
-                    self.input_label = batch_label.clone();
-                    self.loss = loss;
-
-                    let mut tmp = network_history.expect("network_history should be initialized");
-                    tmp.push(self.clone());
-                    network_history = Some(tmp);
-
-                    //reinit bebug vars
-                    self.itermediate_evaluation_results = Vec::new();
-                    self.d_zs = Vec::new();
-                    self.d_ws = Vec::new();
-                    self.d_bs = Vec::new();
-                }
 
                 sum_loss += loss;
                 sum_acc += acc;
@@ -273,13 +221,26 @@ impl Model {
 
                 if debug {
                     self.d_score = d_score.clone();
-                }
-
-                if DEBUG {
-                    log_matrix_into_csv("d_score : ", &d_score);
+                    self.input = batch_data.clone();
+                    self.input_label = batch_label.clone();
+                    self.loss = loss;
+                    self.layers_debug = self.layers.clone();
                 }
 
                 self.update_params(&d_score, &batch_data, debug);
+
+                if debug {
+                    let mut tmp = network_history.expect("network_history should be initialized");
+                    tmp.push(self.clone());
+                    network_history = Some(tmp);
+
+                    //reinit bebug vars
+                    self.itermediate_evaluation_results = Vec::new();
+                    self.d_zs = Vec::new();
+                    self.d_ws = Vec::new();
+                    self.d_bs = Vec::new();
+                }
+
                 batch_number += 1;
             }
         }

@@ -52,6 +52,7 @@ fn main() {
             layers: vec![layer1, layer2, layer3],
             lambda: 0.001,
             learning_step: 0.1,
+            layers_debug: Vec::new(),
             input: Matrix::new(2,2),
             input_label: Matrix::new(2,2),
             itermediate_evaluation_results: Vec::new(),
@@ -76,7 +77,7 @@ fn main() {
         for model in models {
             
             println!("----------------------- new epoch --- w and b : ");
-            model.layers.iter().for_each(|l| {l.weights_t.display(); l.biases.display();});
+            model.layers_debug.iter().for_each(|l| {l.weights_t.display(); l.biases.display();});
             println!("----------------------- input : ");
             model.input.display();
             println!("----------------------- input_label: ");

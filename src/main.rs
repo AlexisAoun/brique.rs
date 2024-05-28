@@ -20,9 +20,15 @@ use crate::spiral::*;
 use crate::utils::*;
 
 fn main() {
-    end_to_end_model_test();
-    
+    let precision : i32 = 5;
+     let mut a:f64 = 0.13125456_f64 * 10_f64.powi(precision);
+     a = a.round() / 10_f64.powi(precision);
 
+     let mut b:f64 = 0.131256564354_f64 * 10_f64.powi(precision);
+     b = b.round() / 10_f64.powi(precision);
+
+    println!(" {} , {}", a ,b);
+    assert_eq!(a,b);
 }
 
     fn end_to_end_model_test() {

@@ -125,13 +125,19 @@ impl Matrix {
     }
 
     // used for test
-    pub fn is_equal(&self, m: &Matrix) -> bool {
+    pub fn is_equal(&self, m: &Matrix, precision: i32) -> bool {
         if self.width != m.width || self.height != m.height {
             return false;
         } else {
             for r in 0..self.height {
                 for c in 0..self.width {
-                    if self.data[r][c] != m.data[r][c] {
+                    let mut a: f64 = self.data[r][c] * 10_f64.powi(precision);
+                    a = a.round() / 10_f64.powi(precision);
+
+                    let mut b: f64 = m.data[r][c] * 10_f64.powi(precision);
+                    b = b.round() / 10_f64.powi(precision);
+
+                    if a != b {
                         return false;
                     }
                 }

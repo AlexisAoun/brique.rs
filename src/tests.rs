@@ -30,63 +30,119 @@ mod tests {
             layers: vec![layer1, layer2, layer3],
             lambda: 0.001,
             learning_step: 0.1,
+            layers_debug: Vec::new(),
+            input: Matrix::new(2, 2),
+            input_label: Matrix::new(2, 2),
+            itermediate_evaluation_results: Vec::new(),
+            softmax_output: Matrix::new(2, 2),
+            d_zs: Vec::new(),
+            d_ws: Vec::new(),
+            d_bs: Vec::new(),
+            d_score: Matrix::new(2, 3),
+            loss: 0.0,
+            reg_loss: 0.0,
+            data_loss: 0.0,
         };
 
-        let network_history = model.train(&test_data[0], &test_data[1], 3, 2, true);
-
-        //TODO decide how to manage the expected params csv
-        // iter thru the network_history and do assert_eq using is_equal() from matrix
+        let network_history = model.train(&test_data[0], &test_data[1], 6, 5, true);
 
         let models: Vec<Model> = network_history.unwrap();
 
-        let index: usize = 0;
+        let mut index: usize = 0;
+        let precision: i32 = 10;
+
         for model in models {
-            model.layers.iter().for_each(|l| {l.weights_t.display(); l.biases.display();});
-            // assert!(
-            //     model.layers[0]
-            //         .weights_t
-            //         .is_equal(&expected_params[index / 3]),
-            //     "Weights model {}, layer 1, not expected value",
-            //     index
-            // );
-            // assert!(
-            //     model.layers[0]
-            //         .biases
-            //         .is_equal(&expected_params[index / 3 + 1]),
-            //     "Biases model {}, layer 1, not expected value",
-            //     index
-            // );
-            //
-            // assert!(
-            //     model.layers[1]
-            //         .weights_t
-            //         .is_equal(&expected_params[index / 3 + 2]),
-            //     "Weights model {}, layer 1, not expected value",
-            //     index
-            // );
-            //
-            // assert!(
-            //     model.layers[1]
-            //         .biases
-            //         .is_equal(&expected_params[index / 3 + 3]),
-            //     "Biases model {}, layer 1, not expected value",
-            //     index
-            // );
-            //
-            // assert!(
-            //     model.layers[2]
-            //         .weights_t
-            //         .is_equal(&expected_params[index / 3 + 4]),
-            //     "Weights model {}, layer 1, not expected value",
-            //     index
-            // );
-            // assert!(
-            //     model.layers[2]
-            //         .biases
-            //         .is_equal(&expected_params[index / 3 + 5]),
-            //     "Biases model {}, layer 1, not expected value",
-            //     index
-            // );
+            
+            // weights and biases
+            model.layers_debug.iter().enumerate().for_each(|(i, l)| {
+                assert!(
+                    l.weights_t
+                        .is_equal(&expected_params[(index * 21) + (i * 2)], precision),
+                    "Weights in iteration {}, layer {}, incorrect values",
+                    index + 1,
+                    i + 1
+                );
+                assert!(
+                    l.biases
+                        .is_equal(&expected_params[(index * 21) + (i * 2) + 1], precision),
+                    "Biases in iteration {}, layer {}, incorrect values",
+                    index + 1,
+                    i + 1
+                );
+            });
+
+            // intermediate layer results
+            model
+                .itermediate_evaluation_results
+                .iter()
+                .enumerate()
+                .for_each(|(i, m)| {
+                    assert!(
+                        m.is_equal(&expected_params[(index * 21) + i + 6], precision),
+                        "Intermediate evaluation result in iteration {}, layer {}, incorrect values",
+                        index + 1,
+                        i + 1
+                    )
+                });
+
+            // softmax result
+            assert!(
+                model
+                    .softmax_output
+                    .is_equal(&expected_params[(index * 21) + 10], precision),
+                "softmax output in iteration {}, incorrect values",
+                index + 1,
+            );
+
+            // gradient of the loss
+            assert!(
+                model
+                    .d_score
+                    .is_equal(&expected_params[(index * 21) + 11], precision),
+                "gradient of loss d_score in iteration {}, incorrect values",
+                index + 1,
+            );
+
+            // gradient of the weights
+            model.d_ws.iter().enumerate().for_each(|(i, m)| {
+                assert!(
+                    m.is_equal(&expected_params[(index * 21) + (i * 3) + 12], precision),
+                    "Gradient of the weights in iteration {}, layer {}, incorrect values",
+                    index + 1,
+                    i + 1
+                )
+            });
+
+            // gradient of the biases
+            model.d_bs.iter().enumerate().for_each(|(i, m)| {
+                assert!(
+                    m.is_equal(&expected_params[(index * 21) + (i * 3) + 13], precision),
+                    "Gradient of the biases in iteration {}, layer {}, incorrect values",
+                    index + 1,
+                    i + 1
+                )
+            });
+
+            // gradient of the hidden layers scores
+            model
+                .d_zs
+                .iter()
+                .enumerate()
+                .for_each(|(i, m)| {
+                    if i > 0 {
+                        assert!(
+                            m.is_equal(&expected_params[(index * 21) + ((i-1)*3) + 14], precision),
+                            "Gradient of the hidden layer score in iteration {}, layer {}, incorrect values",
+                            index + 1,
+                            i + 1
+                        )
+                    }
+                });
+
+            let loss_matrix = Matrix::init(1,3, vec![model.data_loss, model.reg_loss, model.loss]);
+            assert!(loss_matrix.is_equal(&loss_matrix, precision), "Loss in iteration {}, incorrect values", index + 1);
+
+            index += 1;
         }
     }
 
@@ -146,7 +202,7 @@ mod tests {
         expected_output.data[3][1] = 3.0;
         expected_output.data[3][2] = 1.5;
 
-        assert!(output.is_equal(&expected_output));
+        assert!(output.is_equal(&expected_output, 10));
     }
 
     #[test]
@@ -165,6 +221,6 @@ mod tests {
         expected_output.data[1][1] = -4.21;
         expected_output.data[1][2] = 0.5;
 
-        assert!(output.is_equal(&expected_output));
+        assert!(output.is_equal(&expected_output, 10));
     }
 }

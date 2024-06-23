@@ -32,15 +32,35 @@ pub struct Model {
 // of the loss function compared to said variable, so d_score is d Loss/ d Score
 // doing so for ease of read
 impl Model {
-    pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
+    pub fn init(layers: Vec<Layer>, lambda: f64, learning_step: f64) -> Model {
+        let output = Model {
+            layers,
+            lambda,
+            learning_step,
+            layers_debug: Vec::new(),
+            input: Matrix::new(2, 2),
+            input_label: Matrix::new(2, 2),
+            itermediate_evaluation_results: Vec::new(),
+            softmax_output: Matrix::new(2, 2),
+            d_zs: Vec::new(),
+            d_ws: Vec::new(),
+            d_bs: Vec::new(),
+            d_score: Matrix::new(2, 3),
+            loss: 0.0,
+            reg_loss: 0.0,
+            data_loss: 0.0,
+        };
 
+        output
+    }
+    pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
         let mut index: u32 = 0;
         let mut tmp: Matrix = Matrix::new(0, 0);
         for layer in self.layers.iter_mut() {
             if index == 0 {
-                tmp = layer.forward(input);
+                tmp = layer.forward(input, false);
             } else {
-                tmp = layer.forward(&tmp);
+                tmp = layer.forward(&tmp, false);
             }
 
             if debug {
@@ -158,6 +178,7 @@ impl Model {
         labels: &Matrix,
         batch_size: u32,
         epochs: u32,
+        validation_dataset_size: usize,
         debug: bool,
     ) -> Option<Vec<Model>> {
         let mut network_history: Option<Vec<Model>> = None;
@@ -166,21 +187,27 @@ impl Model {
             network_history = Some(Vec::new());
         }
 
-        for epoch in 0..epochs {
-            let mut avg_loss: f64 = 0.0;
-            let mut avg_acc: f64 = 0.0;
+        let mut index_table: Vec<u32>;
+        let index_validation: Vec<u32>;
+        let mut validation_data: Matrix = Matrix::new(validation_dataset_size as usize, data.width);
+        let mut validation_label: Matrix = Matrix::new(1, validation_dataset_size as usize);
 
-            let mut sum_loss: f64 = 0.0;
-            let mut sum_acc: f64 = 0.0;
+        if debug {
+            index_table = (0..data.height as u32).collect();
+        } else {
+            index_table = generate_vec_rand_unique(data.height as u32);
 
-            let index_table;
+            index_validation = index_table[0..validation_dataset_size].to_vec();
+            index_table.drain(0..validation_dataset_size);
 
-            if debug {
-                index_table = (0..data.height as u32).collect();
-            } else {
-                index_table = generate_vec_rand_unique(data.height as u32);
+            for i in 0..validation_dataset_size as usize {
+                let index: usize = index_validation[i] as usize;
+                validation_data.data[i] = data.data[index].clone();
+                validation_label.data[0][i] = labels.data[0][index];
             }
+        }
 
+        for epoch in 0..epochs {
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
 
             let mut batch_number = 0;
@@ -197,25 +224,6 @@ impl Model {
 
                 let score: Matrix = self.evaluate(&batch_data, debug);
                 let loss: f64 = self.compute_loss(&score, &batch_label, debug);
-                let acc: f64 = self.accuracy(&batch_data, &batch_label);
-
-                sum_loss += loss;
-                sum_acc += acc;
-
-                if batch_number == 0 {
-                    avg_loss = loss;
-                    avg_acc = acc;
-                } else {
-                    avg_loss = sum_loss / batch_number as f64;
-                    avg_acc = sum_acc / batch_number as f64;
-                }
-
-                if batch_number % 100 == 0 {
-                    println!(
-                        "Iteration : {}, Batch_number : {}, Loss : {}, Acc : {}",
-                        epoch, batch_number, avg_loss, avg_acc
-                    );
-                }
 
                 let d_score = Model::compute_d_score(&score, &batch_label);
 
@@ -242,6 +250,18 @@ impl Model {
                 }
 
                 batch_number += 1;
+
+                if batch_number % 5 == 0 && !debug {
+                    let score_validation: Matrix = self.evaluate(&validation_data, debug);
+                    let loss_validation: f64 = self.compute_loss(&score_validation, &validation_label, debug);
+                    let acc_validation: f64 = self.accuracy(&validation_data, &validation_label);
+
+                    println!(
+                        "Iteration : {}, Batch_number : {}, Loss : {}, Acc : {}",
+                        epoch, batch_number, loss_validation, acc_validation
+                    );
+                }
+
             }
         }
 
@@ -276,6 +296,24 @@ impl Model {
 
             output.data[0][r] = index_max as f64;
         }
+
+        output
+    }
+
+    pub fn predict(&mut self, input: &Matrix) -> Matrix {
+        let mut index: u32 = 0;
+        let mut tmp: Matrix = Matrix::new(0, 0);
+        for layer in self.layers.iter_mut() {
+            if index == 0 {
+                tmp = layer.forward(input, true);
+            } else {
+                tmp = layer.forward(&tmp, true);
+            }
+
+            index += 1;
+        }
+
+        let output = softmax(&tmp);
 
         output
     }

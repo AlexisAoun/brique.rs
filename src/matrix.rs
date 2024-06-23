@@ -55,7 +55,7 @@ impl Matrix {
 
     pub fn dot(&self, m: &Matrix) -> Matrix {
         let mut res: Matrix = Matrix::new(self.height, m.width);
-        if self.width == m.height {
+        assert_eq!(self.width, m.height, "Error while doing a dot product: Dimension incompatibility, width of vec 1 : {}, height of vec 2 : {}", self.width, m.height);
             for c in 0..m.width {
                 for r in 0..self.height {
                     let mut tmp: f64 = 0.0;
@@ -65,9 +65,6 @@ impl Matrix {
                     res.data[r][c] = tmp;
                 }
             }
-        } else {
-            panic!("Error while doing a dot product: Dimension incompatibility")
-        }
         res
     }
 

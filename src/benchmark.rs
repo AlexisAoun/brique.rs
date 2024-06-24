@@ -2,8 +2,6 @@ use std::time::Instant;
 use crate::layers::*;
 use crate::model::*;
 use crate::spiral::*;
-// use crate::utils::*;
-// use crate::matrix::*;
 
 pub fn benchmark() {
 
@@ -33,7 +31,10 @@ pub fn spiral_dataset_test() {
     model.train(&data, &labels, 50, 2, 500, false);
 }
 
+// use crate::utils::*;
+// use crate::matrix::*;
 // will do later after optimizing the code
+
 #[allow(dead_code)]
 fn minst_test() {
     // println!("extracting...");

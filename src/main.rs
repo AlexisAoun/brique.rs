@@ -10,17 +10,18 @@ mod parse_test_csv;
 mod spiral;
 mod tests;
 mod utils;
+mod benchmark;
 
 use crate::layers::*;
 use crate::log_into_csv::*;
 use crate::matrix::*;
 use crate::model::*;
-use crate::parse_test_csv::*;
 use crate::spiral::*;
 use crate::utils::*;
+use crate::benchmark::*;
 
 fn main() {
-    spiral_dataset_test();
+    benchmark();
 }
 
 fn spiral_dataset_test() {

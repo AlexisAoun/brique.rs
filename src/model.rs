@@ -1,7 +1,6 @@
 use crate::activation::*;
 use crate::layers;
 use crate::layers::*;
-use crate::log_into_csv::log_matrix_into_csv;
 use crate::loss::*;
 use crate::matrix::*;
 use crate::utils::*;

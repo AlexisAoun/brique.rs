@@ -1,4 +1,4 @@
-use crate::Matrix;
+use crate::matrix::*;
 use rand::seq::SliceRandom;
 use std::fs::read;
 

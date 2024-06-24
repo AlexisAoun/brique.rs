@@ -1,7 +1,5 @@
 use crate::activation::*;
-use crate::log_into_csv::log_matrix_into_csv;
 use crate::matrix::*;
-use crate::utils::*;
 
 // note : we have directly the transpose of weights (hence the _t) to optimize computation
 #[derive(Clone)]
@@ -22,7 +20,8 @@ impl Layer {
         }
     }
 
-    pub fn init_test(input_size: u32, size: u32, activation: bool, weights_t: Matrix) -> Layer {
+    #[allow(dead_code)]
+    pub fn init_test(size: u32, activation: bool, weights_t: Matrix) -> Layer {
         Layer {
             weights_t,
             biases: Matrix::new(1, size.try_into().unwrap()),

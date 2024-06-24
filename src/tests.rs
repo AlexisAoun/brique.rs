@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod tests {
-    use crate::{layers::Layer, model::Model, parse_test_csv::parse_test_csv, Matrix};
+    use crate::{layers::Layer, model::Model, parse_test_csv::parse_test_csv, matrix::*};
 
     #[test]
     fn end_to_end_model_test() {
         let number_of_layers = 3;
-        let input_weights: Vec<Matrix> = parse_test_csv("test_input_weights.csv".to_string());
-        let test_data: Vec<Matrix> = parse_test_csv("test_data.csv".to_string());
-        let expected_params: Vec<Matrix> = parse_test_csv("expected_params.csv".to_string());
+        let input_weights: Vec<Matrix> = parse_test_csv("test_data/test_input_weights.csv".to_string());
+        let test_data: Vec<Matrix> = parse_test_csv("test_data/test_data.csv".to_string());
+        let expected_params: Vec<Matrix> = parse_test_csv("test_data/expected_params.csv".to_string());
 
         assert_eq!(
             input_weights.len(),
@@ -22,9 +22,9 @@ mod tests {
             number_of_layers
         );
 
-        let layer1 = Layer::init_test(2, 3, true, input_weights[0].clone());
-        let layer2 = Layer::init_test(3, 3, true, input_weights[1].clone());
-        let layer3 = Layer::init_test(3, 3, false, input_weights[2].clone());
+        let layer1 = Layer::init_test(3, true, input_weights[0].clone());
+        let layer2 = Layer::init_test(3, true, input_weights[1].clone());
+        let layer3 = Layer::init_test(3, false, input_weights[2].clone());
 
         let mut model = Model {
             layers: vec![layer1, layer2, layer3],

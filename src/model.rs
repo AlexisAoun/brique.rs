@@ -1,5 +1,4 @@
 use crate::activation::*;
-use crate::layers;
 use crate::layers::*;
 use crate::loss::*;
 use crate::matrix::*;
@@ -251,7 +250,7 @@ impl Model {
                 batch_number += 1;
 
                 if batch_number % 5 == 0 && !debug {
-                    let score_validation: Matrix = self.evaluate(&validation_data, debug);
+                    let score_validation: Matrix = self.predict(&validation_data);
                     let loss_validation: f64 = self.compute_loss(&score_validation, &validation_label, debug);
                     let acc_validation: f64 = self.accuracy(&validation_data, &validation_label);
 

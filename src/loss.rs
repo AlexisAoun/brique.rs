@@ -1,6 +1,5 @@
-use crate::config::DEBUG;
-use crate::log_matrix_into_csv;
-use crate::{activation::softmax, Layer, Matrix};
+use crate::matrix::*;
+use crate::layers::*;
 
 pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
     assert_eq!(
@@ -31,23 +30,8 @@ pub fn cross_entropy(output: &Matrix, labels: &Matrix) -> f64 {
 pub fn l2_reg(layers: &Vec<Layer>, lambda: f64) -> f64 {
     let mut l2: f64 = 0.0;
 
-    if DEBUG {
-        println!("##### Begining L2 Reg #####");
-    }
-
     for layer in layers {
-        if DEBUG {
-            log_matrix_into_csv("computing L2 reg; weights : ", &layer.weights_t);
-        }
         l2 += 0.5 * lambda * (layer.weights_t.pow(2).sum());
-        if DEBUG {
-            println!("tmp L2 : {}", l2);
-        }
-    }
-
-    if DEBUG {
-        println!("output L2 : {}", l2);
-        println!("##### Ending L2 Reg #####");
     }
 
     l2

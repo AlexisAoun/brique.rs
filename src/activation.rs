@@ -1,4 +1,4 @@
-use crate::Matrix;
+use crate::matrix::Matrix;
 
 pub fn relu(input: f64) -> f64 {
     if input < 0.0 {

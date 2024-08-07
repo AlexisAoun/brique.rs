@@ -56,15 +56,15 @@ impl Matrix {
     pub fn dot(&self, m: &Matrix) -> Matrix {
         let mut res: Matrix = Matrix::new(self.height, m.width);
         assert_eq!(self.width, m.height, "Error while doing a dot product: Dimension incompatibility, width of vec 1 : {}, height of vec 2 : {}", self.width, m.height);
-            for c in 0..m.width {
-                for r in 0..self.height {
-                    let mut tmp: f64 = 0.0;
-                    for a in 0..self.width {
-                        tmp = tmp + self.data[r][a] * m.data[a][c];
-                    }
-                    res.data[r][c] = tmp;
+        for c in 0..m.width {
+            for r in 0..self.height {
+                let mut tmp: f64 = 0.0;
+                for a in 0..self.width {
+                    tmp = tmp + self.data[r][a] * m.data[a][c];
                 }
+                res.data[r][c] = tmp;
             }
+        }
         res
     }
 
@@ -77,11 +77,17 @@ impl Matrix {
         );
         let mut res: Matrix = Matrix::new(self.height, self.width);
 
-        for r in 0..self.height {
-            for c in 0..self.width {
-                res.data[r][c] = self.data[r][c] + m.data[0][c];
-            }
-        }
+        // for r in 0..self.height {
+        //     for c in 0..self.width {
+        //         res.data[r][c] = self.data[r][c] + m.data[0][c];
+        //     }
+        // }
+
+        self.data.iter().enumerate().for_each(|(index_row, row)| {
+            row.iter().enumerate().for_each(|(index_col, value)| {
+                res.data[index_row][index_col] = value + m.data[0][index_col]
+            })
+        });
 
         res
     }
@@ -113,11 +119,18 @@ impl Matrix {
     pub fn t(&self) -> Matrix {
         let mut output: Matrix = Matrix::new(self.width, self.height);
 
-        for r in 0..output.height {
-            for c in 0..output.width {
-                output.data[r][c] = self.data[c][r];
-            }
-        }
+        // for r in 0..output.height {
+        //     for c in 0..output.width {
+        //         output.data[r][c] = self.data[c][r];
+        //     }
+        // }
+
+        self.data.iter().enumerate().for_each(|(index_row, row)| {
+            row.iter().enumerate().for_each(|(index_col, value)| {
+                output.data[index_col][index_row] = *value 
+            })
+        });
+
         output
     }
 
@@ -145,66 +158,108 @@ impl Matrix {
 
     pub fn exp(&self) -> Matrix {
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        for r in 0..self.height {
-            for c in 0..self.width {
-                output.data[r][c] = self.data[r][c].exp();
-            }
-        }
+        // for r in 0..self.height {
+        //     for c in 0..self.width {
+        //         output.data[r][c] = self.data[r][c].exp();
+        //     }
+        // }
+        //
+
+        self.data.iter().enumerate().for_each(|(index_row, row)| {
+            row.iter()
+                .enumerate()
+                .for_each(|(index_col, value)| output.data[index_row][index_col] = value.exp())
+        });
+
         output
     }
 
     pub fn pow(&self, a: i32) -> Matrix {
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        for r in 0..self.height {
-            for c in 0..self.width {
-                output.data[r][c] = self.data[r][c].powi(a);
-            }
-        }
+        // for r in 0..self.height {
+        //     for c in 0..self.width {
+        //         output.data[r][c] = self.data[r][c].powi(a);
+        //     }
+        // }
+
+        self.data.iter().enumerate().for_each(|(index_row, row)| {
+            row.iter()
+                .enumerate()
+                .for_each(|(index_col, value)| output.data[index_row][index_col] = value.powi(a))
+        });
+
         output
     }
 
     pub fn sum(&self) -> f64 {
         let mut sum: f64 = 0.0;
-        for r in 0..self.height {
-            for c in 0..self.width {
-                sum += self.data[r][c];
-            }
-        }
+        // for r in 0..self.height {
+        //     for c in 0..self.width {
+        //         sum += self.data[r][c];
+        //     }
+        // }
+
+        self.data
+            .iter()
+            .for_each(|row| row.iter().for_each(|value| sum += value));
+
         sum
     }
 
     pub fn sum_rows(&self) -> Matrix {
         let mut output: Matrix = Matrix::new(1, self.width);
-        for c in 0..self.width {
-            for r in 0..self.height {
-                output.data[0][c] += self.data[r][c];
-            }
-        }
+        // for c in 0..self.width {
+        //     for r in 0..self.height {
+        //         output.data[0][c] += self.data[r][c];
+        //     }
+        // }
+
+        self.data.iter().for_each(|row| {
+            row.iter()
+                .enumerate()
+                .for_each(|(index, value)| output.data[0][index] += value)
+        });
 
         output
     }
 
-    pub fn div(&self, value: f64) -> Matrix {
-        assert_ne!(value, 0.0, "Divide by 0 matrix error");
+    pub fn div(&self, a: f64) -> Matrix {
+        assert_ne!(a, 0.0, "Divide by 0 matrix error");
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        for r in 0..self.height {
-            for c in 0..self.width {
-                output.data[r][c] = self.data[r][c] / value;
-            }
-        }
+        // for r in 0..self.height {
+        //     for c in 0..self.width {
+        //         output.data[r][c] = self.data[r][c] / value;
+        //     }
+        // }
+
+        self.data.iter().enumerate().for_each(|(index_row, row)| {
+            row.iter()
+                .enumerate()
+                .for_each(|(index_col, value)| output.data[index_row][index_col] = value / a)
+        });
+
         output
     }
 
-    pub fn mult(&self, value: f64) -> Matrix {
+    pub fn mult(&self, a: f64) -> Matrix {
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        for r in 0..self.height {
-            for c in 0..self.width {
-                output.data[r][c] = self.data[r][c] * value;
-            }
-        }
+        // for r in 0..self.height {
+        //     for c in 0..self.width {
+        //         output.data[r][c] = self.data[r][c] * value;
+        //     }
+        // }
+
+        self.data.iter().enumerate().for_each(|(index_row, row)| {
+            row.iter()
+                .enumerate()
+                .for_each(|(index_col, value)| output.data[index_row][index_col] = value * a)
+        });
+
         output
     }
 
+
+    //TODO inplace
     pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
         assert!(
             self.height == m.height && self.width == m.width,

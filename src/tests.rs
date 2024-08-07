@@ -1,13 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use crate::{layers::Layer, model::Model, parse_test_csv::parse_test_csv, matrix::*};
+    use crate::{layers::Layer, matrix::*, model::Model, parse_test_csv::parse_test_csv};
 
     #[test]
     fn end_to_end_model_test() {
         let number_of_layers = 3;
-        let input_weights: Vec<Matrix> = parse_test_csv("test_data/test_input_weights.csv".to_string());
+        let input_weights: Vec<Matrix> =
+            parse_test_csv("test_data/test_input_weights.csv".to_string());
         let test_data: Vec<Matrix> = parse_test_csv("test_data/test_data.csv".to_string());
-        let expected_params: Vec<Matrix> = parse_test_csv("test_data/expected_params.csv".to_string());
+        let expected_params: Vec<Matrix> =
+            parse_test_csv("test_data/expected_params.csv".to_string());
 
         assert_eq!(
             input_weights.len(),
@@ -52,7 +54,6 @@ mod tests {
         let precision: i32 = 10;
 
         for model in models {
-            
             // weights and biases
             model.layers_debug.iter().enumerate().for_each(|(i, l)| {
                 assert!(
@@ -139,8 +140,14 @@ mod tests {
                     }
                 });
 
-            let loss_matrix = Matrix::init(1,3, vec![model.data_loss, model.reg_loss, model.loss]);
-            assert!(loss_matrix.is_equal(&loss_matrix, precision), "Loss in iteration {}, incorrect values", index + 1);
+            let loss_matrix = Matrix::init(1, 3, vec![model.data_loss, model.reg_loss, model.loss]);
+            loss_matrix.display();
+            expected_params[((index + 1) * 21) - 1].display();
+            assert!(
+                loss_matrix.is_equal(&expected_params[((index + 1) * 21) - 1], precision),
+                "Loss in iteration {}, incorrect values",
+                index + 1
+            );
 
             index += 1;
         }

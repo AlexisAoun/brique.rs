@@ -18,7 +18,7 @@ pub fn parse_test_csv(file_name: String) -> Vec<Matrix> {
 
     for r in rows {
         if is_line_empty(r) {
-            output_matrices.push(Matrix::init(height, width, extracted_data.clone())) ;
+            output_matrices.push(Matrix::init(height, width, extracted_data.clone()));
 
             extracted_data = vec![];
             width = 0;
@@ -27,7 +27,6 @@ pub fn parse_test_csv(file_name: String) -> Vec<Matrix> {
         }
 
         if r.len() > 0 {
-
             let mut tmp: Vec<f64> = tokenizer_f64(std::str::from_utf8(r).unwrap());
             if width == 0 {
                 width = tmp.len();

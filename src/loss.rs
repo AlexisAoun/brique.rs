@@ -1,5 +1,5 @@
-use crate::matrix::*;
 use crate::layers::*;
+use crate::matrix::*;
 
 pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
     assert_eq!(

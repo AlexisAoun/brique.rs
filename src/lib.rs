@@ -1,10 +1,10 @@
-pub mod matrix;
 pub mod activation;
+pub mod benchmark;
 pub mod layers;
 pub mod loss;
+pub mod matrix;
 pub mod model;
 pub mod parse_test_csv;
 pub mod spiral;
 pub mod tests;
 pub mod utils;
-pub mod benchmark;

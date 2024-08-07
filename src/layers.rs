@@ -28,7 +28,6 @@ impl Layer {
             activation,
             output: Matrix::new(0, 0),
         }
-
     }
 
     pub fn forward(&mut self, input: &Matrix, predict: bool) -> Matrix {

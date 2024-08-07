@@ -1,10 +1,9 @@
-use std::time::Instant;
 use crate::layers::*;
 use crate::model::*;
 use crate::spiral::*;
+use std::time::Instant;
 
 pub fn benchmark() {
-
     let start = Instant::now();
 
     spiral_dataset_test();
@@ -12,7 +11,6 @@ pub fn benchmark() {
     let duration = start.elapsed();
 
     println!("The benchmark took {:?}", duration);
-
 }
 
 pub fn spiral_dataset_test() {
@@ -20,15 +18,15 @@ pub fn spiral_dataset_test() {
 
     let (data, labels) = generate_spiral_dataset(1000, 3);
 
-    let layer1 = Layer::init(2, 300, true);
-    let layer2 = Layer::init(300, 300, true);
-    let layer3 = Layer::init(300, 3, false);
+    let layer1 = Layer::init(2, 100, true);
+    let layer2 = Layer::init(100, 100, true);
+    let layer3 = Layer::init(100, 3, false);
 
     let layers = vec![layer1, layer2, layer3];
 
-    let mut model = Model::init(layers, 0.001, 0.01);
+    let mut model = Model::init(layers, 0.01, 0.01);
 
-    model.train(&data, &labels, 50, 2, 500, false);
+    model.train(&data, &labels, 50, 30, 500, false);
 }
 
 // use crate::utils::*;

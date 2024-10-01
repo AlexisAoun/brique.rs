@@ -1,5 +1,8 @@
-// To acces Matrix data : Matrix.data[row][column]
 use rand::prelude::*;
+use std::thread;
+use std::sync::mpsc::{self, Receiver, Sender};
+
+// To acces Matrix data : Matrix.data[row][column]
 
 // TODO generic type for matrix data
 // TODO use iterators
@@ -53,18 +56,59 @@ impl Matrix {
         output
     }
 
+    // pub fn dot(&self, m: &Matrix) -> Matrix {
+    //     let mut res: Matrix = Matrix::new(self.height, m.width);
+    //     assert_eq!(self.width, m.height, "Error while doing a dot product: Dimension incompatibility, width of vec 1 : {}, height of vec 2 : {}", self.width, m.height);
+    //     for c in 0..m.width {
+    //         for r in 0..self.height {
+    //             let mut tmp: f64 = 0.0;
+    //             for a in 0..self.width {
+    //                 tmp = tmp + self.data[r][a] * m.data[a][c];
+    //             }
+    //             res.data[r][c] = tmp;
+    //         }
+    //     }
+    //     res
+    // }
+
     pub fn dot(&self, m: &Matrix) -> Matrix {
-        let mut res: Matrix = Matrix::new(self.height, m.width);
+        let h = self.height;
+        let w = m.width;
+        let w2 = self.width;
+
+        let mut res: Matrix = Matrix::new(h, w);
         assert_eq!(self.width, m.height, "Error while doing a dot product: Dimension incompatibility, width of vec 1 : {}, height of vec 2 : {}", self.width, m.height);
-        for c in 0..m.width {
-            for r in 0..self.height {
-                let mut tmp: f64 = 0.0;
-                for a in 0..self.width {
-                    tmp = tmp + self.data[r][a] * m.data[a][c];
+
+        type DotProdThrdRes = (f64, usize);
+        let (tx, rx): (Sender<DotProdThrdRes>, Receiver<DotProdThrdRes>)= mpsc::channel();
+
+        //TODO !!! manage failing threads
+        for i in 0..h*w {
+            let tx = tx.clone();
+            let mat1 = self.clone();
+            let mat2 = m.clone();
+            thread::spawn(move || {
+                let mut v : f64 = 0.0;
+                let r = i / w;
+                let c = i % w;
+
+                for a in 0..w2 {
+                    v = v + mat1.data[r][a] * mat2.data[a][c];
                 }
-                res.data[r][c] = tmp;
-            }
+
+                tx.send((v,i)).unwrap();
+            });
         }
+            
+        drop(tx);
+        for received in rx {
+            let r = received.1 / w;
+            let c = received.1 % w;
+
+            res.data[r][c] = received.0;
+
+        }
+
         res
     }
 

@@ -4,14 +4,14 @@ use rand::prelude::*;
 // TODO generic type for matrix data
 // TODO use iterators
 #[derive(Clone)]
-pub struct Matrix {
-    pub data: Vec<Vec<f64>>,
+pub struct Matrix<T> {
+    pub data: Vec<Vec<T>>,
     pub width: usize,
     pub height: usize,
 }
 
-impl Matrix {
-    pub fn new(height: usize, width: usize) -> Matrix {
+impl<T> Matrix<T> {
+    pub fn new(height: usize, width: usize) -> Matrix<T> {
         Matrix {
             data: vec![vec![0.0; width]; height],
             width,
@@ -19,7 +19,7 @@ impl Matrix {
         }
     }
 
-    pub fn init(height: usize, width: usize, data: Vec<f64>) -> Matrix {
+    pub fn init(height: usize, width: usize, data: Vec<T>) -> Matrix<T> {
         assert_eq!(
             height * width,
             data.len(),
@@ -41,7 +41,7 @@ impl Matrix {
         output
     }
 
-    pub fn init_rand(height: usize, width: usize) -> Matrix {
+    pub fn init_rand(height: usize, width: usize) -> Matrix<T> {
         let mut output = Self::new(height, width);
 
         for r in 0..height {
@@ -53,12 +53,12 @@ impl Matrix {
         output
     }
 
-    pub fn dot(&self, m: &Matrix) -> Matrix {
+    pub fn dot(&self, m: &Matrix<T>) -> Matrix<T> {
         let mut res: Matrix = Matrix::new(self.height, m.width);
         assert_eq!(self.width, m.height, "Error while doing a dot product: Dimension incompatibility, width of vec 1 : {}, height of vec 2 : {}", self.width, m.height);
         for c in 0..m.width {
             for r in 0..self.height {
-                let mut tmp: f64 = 0.0;
+                let mut tmp: T = 0.0;
                 for a in 0..self.width {
                     tmp = tmp + self.data[r][a] * m.data[a][c];
                 }
@@ -69,19 +69,13 @@ impl Matrix {
     }
 
     // adds a matrix of X width and 1 height to a matrix of Y height and X width
-    pub fn add_value_to_all_rows(&self, m: &Matrix) -> Matrix {
+    pub fn add_value_to_all_rows(&self, m: &Matrix<T>) -> Matrix<T> {
         assert_eq!(m.height, 1, "The input matrix should have a height of 1");
         assert_eq!(
             m.width, self.width,
             "The 2 matrices should have the same width"
         );
         let mut res: Matrix = Matrix::new(self.height, self.width);
-
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         res.data[r][c] = self.data[r][c] + m.data[0][c];
-        //     }
-        // }
 
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter().enumerate().for_each(|(index_col, value)| {
@@ -92,7 +86,7 @@ impl Matrix {
         res
     }
 
-    pub fn normalize(&self) -> Matrix {
+    pub fn normalize(&self) -> Matrix<T> {
         let mut output: Matrix = Matrix::new(self.height, self.width);
 
         // get the maximum
@@ -116,14 +110,8 @@ impl Matrix {
     }
 
     // transpose
-    pub fn t(&self) -> Matrix {
+    pub fn t(&self) -> Matrix<T> {
         let mut output: Matrix = Matrix::new(self.width, self.height);
-
-        // for r in 0..output.height {
-        //     for c in 0..output.width {
-        //         output.data[r][c] = self.data[c][r];
-        //     }
-        // }
 
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter().enumerate().for_each(|(index_col, value)| {
@@ -135,7 +123,7 @@ impl Matrix {
     }
 
     // used for test
-    pub fn is_equal(&self, m: &Matrix, precision: i32) -> bool {
+    pub fn is_equal(&self, m: &Matrix<T>, precision: i32) -> bool {
         if self.width != m.width || self.height != m.height {
             return false;
         } else {
@@ -156,14 +144,8 @@ impl Matrix {
         true
     }
 
-    pub fn exp(&self) -> Matrix {
+    pub fn exp(&self) -> Matrix<T> {
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c].exp();
-        //     }
-        // }
-        //
 
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
@@ -174,13 +156,8 @@ impl Matrix {
         output
     }
 
-    pub fn pow(&self, a: i32) -> Matrix {
+    pub fn pow(&self, a: i32) -> Matrix<T> {
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c].powi(a);
-        //     }
-        // }
 
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
@@ -191,13 +168,8 @@ impl Matrix {
         output
     }
 
-    pub fn sum(&self) -> f64 {
-        let mut sum: f64 = 0.0;
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         sum += self.data[r][c];
-        //     }
-        // }
+    pub fn sum(&self) -> T {
+        let mut sum: T = 0.0;
 
         self.data
             .iter()
@@ -206,13 +178,8 @@ impl Matrix {
         sum
     }
 
-    pub fn sum_rows(&self) -> Matrix {
+    pub fn sum_rows(&self) -> Matrix<T> {
         let mut output: Matrix = Matrix::new(1, self.width);
-        // for c in 0..self.width {
-        //     for r in 0..self.height {
-        //         output.data[0][c] += self.data[r][c];
-        //     }
-        // }
 
         self.data.iter().for_each(|row| {
             row.iter()
@@ -223,14 +190,9 @@ impl Matrix {
         output
     }
 
-    pub fn div(&self, a: f64) -> Matrix {
+    pub fn div(&self, a: f64) -> Matrix<T> {
         assert_ne!(a, 0.0, "Divide by 0 matrix error");
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c] / value;
-        //     }
-        // }
 
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
@@ -241,13 +203,8 @@ impl Matrix {
         output
     }
 
-    pub fn mult(&self, a: f64) -> Matrix {
+    pub fn mult(&self, a: f64) -> Matrix<T> {
         let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c] * value;
-        //     }
-        // }
 
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
@@ -260,7 +217,7 @@ impl Matrix {
 
 
     //TODO inplace
-    pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
+    pub fn add_two_matrices(&self, m: &Matrix<T>) -> Matrix<T> {
         assert!(
             self.height == m.height && self.width == m.width,
             "The two matrices should have the same dimensions"

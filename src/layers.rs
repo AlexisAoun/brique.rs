@@ -3,14 +3,14 @@ use crate::matrix::*;
 
 // note : we have directly the transpose of weights (hence the _t) to optimize computation
 #[derive(Clone)]
-pub struct Layer {
-    pub weights_t: Matrix,
-    pub biases: Matrix,
+pub struct Layer<T> {
+    pub weights_t: Matrix<T>,
+    pub biases: Matrix<T>,
     pub activation: bool,
-    pub output: Matrix,
+    pub output: Matrix<T>,
 }
 
-impl Layer {
+impl<T> Layer<T> {
     pub fn init(input_size: u32, size: u32, activation: bool) -> Layer {
         Layer {
             weights_t: Matrix::init_rand(input_size.try_into().unwrap(), size.try_into().unwrap()),

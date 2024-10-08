@@ -1,19 +1,21 @@
 // To acces Matrix data : Matrix.data[row][column]
 use rand::prelude::*;
 
-// TODO generic type for matrix data
-// TODO use iterators
+pub trait FloatTrait {}
+impl FloatTrait for f64 {}
+impl FloatTrait for f32 {}
+
 #[derive(Clone)]
-pub struct Matrix<T> {
-    pub data: Vec<Vec<T>>,
+pub struct Matrix<T: FloatTrait> {
+    pub data: Vec<T>,
     pub width: usize,
     pub height: usize,
 }
 
 impl<T> Matrix<T> {
-    pub fn new(height: usize, width: usize) -> Matrix<T> {
+    pub fn new(height: usize, width: usize, precision: T) -> Matrix<T> {
         Matrix {
-            data: vec![vec![0.0; width]; height],
+            data: vec![0.0; width*height],
             width,
             height,
         }

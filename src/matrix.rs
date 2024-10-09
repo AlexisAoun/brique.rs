@@ -5,15 +5,28 @@ use rand::prelude::*;
 // TODO use iterators
 #[derive(Clone)]
 pub struct Matrix {
-    pub data: Vec<Vec<f64>>,
+    data: Vec<f64>,
     pub width: usize,
     pub height: usize,
 }
 
 impl Matrix {
+
+    pub fn get(&self, row: usize, column: usize) -> f64 {
+       assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
+       assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
+       self.data[row*self.width+column] 
+    }
+
+    pub fn set(&mut self, value: f64, row: usize, column: usize) {
+       assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
+       assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
+       self.data[row*self.width+column] = value;
+    }
+
     pub fn new(height: usize, width: usize) -> Matrix {
         Matrix {
-            data: vec![vec![0.0; width]; height],
+            data: vec![0.0; width*height],
             width,
             height,
         }
@@ -28,15 +41,7 @@ impl Matrix {
         );
 
         let mut output = Self::new(height, width);
-
-        let mut index: usize = 0;
-        for i in data {
-            let c: usize = index % width;
-            let r: usize = index / width;
-
-            output.data[r][c] = i;
-            index += 1;
-        }
+        output.data = data;
 
         output
     }
@@ -47,7 +52,7 @@ impl Matrix {
         for r in 0..height {
             for c in 0..width {
                 let x: f64 = random();
-                output.data[r][c] = x * 0.01;
+                output.set(x * 0.01, r, c);
             }
         }
         output

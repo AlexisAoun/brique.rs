@@ -1,11 +1,11 @@
 // To acces Matrix data : Matrix.data[row][column]
 use rand::prelude::*;
 
-// TODO generic type for matrix data
 // TODO use iterators
+// TODO lots of optimizations left
 #[derive(Clone)]
 pub struct Matrix {
-    data: Vec<f64>,
+    pub data: Vec<f64>,
     pub width: usize,
     pub height: usize,
 }
@@ -40,15 +40,17 @@ impl Matrix {
                    not compatible with the dimension"
         );
 
-        let mut output = Self::new(height, width);
-        output.data = data;
-
-        output
+        Matrix {
+            data,
+            height,
+            width
+        }
     }
 
     pub fn init_rand(height: usize, width: usize) -> Matrix {
         let mut output = Self::new(height, width);
 
+        //interator in palce here
         for r in 0..height {
             for c in 0..width {
                 let x: f64 = random();
@@ -65,16 +67,16 @@ impl Matrix {
             for r in 0..self.height {
                 let mut tmp: f64 = 0.0;
                 for a in 0..self.width {
-                    tmp = tmp + self.data[r][a] * m.data[a][c];
+                    tmp = tmp + self.get(r,a) * m.get(a,c);
                 }
-                res.data[r][c] = tmp;
+                res.set(tmp, r, c);
             }
         }
         res
     }
 
     // adds a matrix of X width and 1 height to a matrix of Y height and X width
-    pub fn add_value_to_all_rows(&self, m: &Matrix) -> Matrix {
+    pub fn add_1d_matrix_to_all_rows(&self, m: &Matrix) -> Matrix {
         assert_eq!(m.height, 1, "The input matrix should have a height of 1");
         assert_eq!(
             m.width, self.width,
@@ -88,10 +90,14 @@ impl Matrix {
         //     }
         // }
 
-        self.data.iter().enumerate().for_each(|(index_row, row)| {
-            row.iter().enumerate().for_each(|(index_col, value)| {
-                res.data[index_row][index_col] = value + m.data[0][index_col]
-            })
+        // self.data.iter().enumerate().for_each(|(index_row, row)| {
+        //     row.iter().enumerate().for_each(|(index_col, value)| {
+        //         res.data[index_row][index_col] = value + m.data[0][index_col]
+        //     })
+        // });
+
+        self.data.iter().enumerate().for_each(|(index, value)| {
+            res.set(value+m.get(1, index%self.width), index/self.width, index&self.width)
         });
 
         res
@@ -170,6 +176,7 @@ impl Matrix {
         // }
         //
 
+        // TODO should use some type of mapping with the 1 d representation
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
                 .enumerate()
@@ -187,6 +194,7 @@ impl Matrix {
         //     }
         // }
 
+        // TODO should use some type of mapping with the 1 d representation
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
                 .enumerate()
@@ -204,6 +212,7 @@ impl Matrix {
         //     }
         // }
 
+        // TODO should use some type of mapping with the 1 d representation
         self.data
             .iter()
             .for_each(|row| row.iter().for_each(|value| sum += value));
@@ -219,6 +228,7 @@ impl Matrix {
         //     }
         // }
 
+        // TODO should use some type of mapping with the 1 d representation
         self.data.iter().for_each(|row| {
             row.iter()
                 .enumerate()
@@ -237,6 +247,7 @@ impl Matrix {
         //     }
         // }
 
+        // TODO should use some type of mapping with the 1 d representation
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
                 .enumerate()
@@ -254,6 +265,7 @@ impl Matrix {
         //     }
         // }
 
+        // TODO should use some type of mapping with the 1 d representation
         self.data.iter().enumerate().for_each(|(index_row, row)| {
             row.iter()
                 .enumerate()

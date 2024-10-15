@@ -122,6 +122,7 @@ impl Model {
 
     pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix, debug: bool) {
         let mut index: usize = self.layers.len() - 1;
+        //too much cloning going on here ? 
         let mut d_z: Matrix = d_score.clone();
 
         loop {

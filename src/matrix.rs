@@ -8,20 +8,31 @@ pub struct Matrix {
     pub data: Vec<f64>,
     pub width: usize,
     pub height: usize,
+    pub transposed: bool,
 }
 
 impl Matrix {
 
     pub fn get(&self, row: usize, column: usize) -> f64 {
-       assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
-       assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
-       self.data[row*self.width+column] 
+        assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
+        assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
+
+        if !self.transposed {
+            self.data[row*self.width+column] 
+        } else {
+            self.data[column*self.height+row] 
+        }
     }
 
     pub fn set(&mut self, value: f64, row: usize, column: usize) {
-       assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
-       assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
-       self.data[row*self.width+column] = value;
+        assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
+        assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
+        
+        if !self.transposed {
+            self.data[row*self.width+column] = value;
+        } else {
+            self.data[column*self.height+row] = value;
+        }
     }
 
     pub fn new(height: usize, width: usize) -> Matrix {
@@ -29,6 +40,7 @@ impl Matrix {
             data: vec![0.0; width*height],
             width,
             height,
+            transposed: false,
         }
     }
 
@@ -42,22 +54,22 @@ impl Matrix {
 
         Matrix {
             data,
+            width,
             height,
-            width
+            transposed: false
         }
     }
 
     pub fn init_rand(height: usize, width: usize) -> Matrix {
-        let mut output = Self::new(height, width);
+        let rand_vec: Vec<f64> = (0..height*width).map(|_| random::<f64>()*0.01).collect();
 
-        //interator in palce here
-        for r in 0..height {
-            for c in 0..width {
-                let x: f64 = random();
-                output.set(x * 0.01, r, c);
-            }
+        Matrix {
+            data: rand_vec,
+            width,
+            height,
+            transposed: false
         }
-        output
+
     }
 
     pub fn dot(&self, m: &Matrix) -> Matrix {
@@ -103,44 +115,20 @@ impl Matrix {
         res
     }
 
-    pub fn normalize(&self) -> Matrix {
-        let mut output: Matrix = Matrix::new(self.height, self.width);
-
+    pub fn normalize(&mut self) {
         // get the maximum
-        let mut max: f64 = 0.0;
-        for r in 0..self.height {
-            for c in 0..self.width {
-                if self.data[r][c] > max {
-                    max = self.data[r][c];
-                }
-            }
-        }
+        let max: f64 = *self.data.iter().max_by(|a, b| a.total_cmp(b)).unwrap();
 
-        // normalize
-        for r in 0..self.height {
-            for c in 0..self.width {
-                output.data[r][c] = self.data[r][c] / max;
-            }
-        }
-
-        output
+        self.data.iter().map(|x| x / max);
     }
 
     // transpose
     pub fn t(&self) -> Matrix {
-        let mut output: Matrix = Matrix::new(self.width, self.height);
-
-        // for r in 0..output.height {
-        //     for c in 0..output.width {
-        //         output.data[r][c] = self.data[c][r];
-        //     }
-        // }
-
-        self.data.iter().enumerate().for_each(|(index_row, row)| {
-            row.iter().enumerate().for_each(|(index_col, value)| {
-                output.data[index_col][index_row] = *value 
-            })
-        });
+        let mut output: Matrix = self.clone();
+        output.transposed = true;
+        let tmp: usize = self.width;
+        output.width = self.height;
+        output.height = tmp;
 
         output
     }

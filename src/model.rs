@@ -36,14 +36,14 @@ impl Model {
             lambda,
             learning_step,
             layers_debug: Vec::new(),
-            input: Matrix::new(2, 2),
-            input_label: Matrix::new(2, 2),
+            input: Matrix::init_zero(2, 2),
+            input_label: Matrix::init_zero(2, 2),
             itermediate_evaluation_results: Vec::new(),
-            softmax_output: Matrix::new(2, 2),
+            softmax_output: Matrix::init_zero(2, 2),
             d_zs: Vec::new(),
             d_ws: Vec::new(),
             d_bs: Vec::new(),
-            d_score: Matrix::new(2, 3),
+            d_score: Matrix::init_zero(2, 3),
             loss: 0.0,
             reg_loss: 0.0,
             data_loss: 0.0,
@@ -53,7 +53,7 @@ impl Model {
     }
     pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
         let mut index: u32 = 0;
-        let mut tmp: Matrix = Matrix::new(0, 0);
+        let mut tmp: Matrix = Matrix::init_zero(0, 0);
         for layer in self.layers.iter_mut() {
             if index == 0 {
                 tmp = layer.forward(input, false);
@@ -88,7 +88,7 @@ impl Model {
     }
 
     pub fn compute_d_score(score: &Matrix, labels: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(score.height, score.width);
+        let mut output: Matrix = Matrix::init_zero(score.height, score.width);
         for r in 0..score.height {
             for c in 0..score.width {
                 //TODO make a choice, to divide or not to divide
@@ -106,7 +106,7 @@ impl Model {
     }
 
     pub fn compute_d_relu(input: &Matrix, z_minus_1: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(input.height, input.width);
+        let mut output: Matrix = Matrix::init_zero(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {
                 if z_minus_1.data[r][c] <= 0.0 {
@@ -189,8 +189,8 @@ impl Model {
 
         let mut index_table: Vec<u32>;
         let index_validation: Vec<u32>;
-        let mut validation_data: Matrix = Matrix::new(validation_dataset_size as usize, data.width);
-        let mut validation_label: Matrix = Matrix::new(1, validation_dataset_size as usize);
+        let mut validation_data: Matrix = Matrix::init_zero(validation_dataset_size as usize, data.width);
+        let mut validation_label: Matrix = Matrix::init_zero(1, validation_dataset_size as usize);
 
         if debug {
             index_table = (0..data.height as u32).collect();
@@ -213,8 +213,8 @@ impl Model {
             let mut batch_number = 0;
 
             for batch_indexes in index_matrix.data {
-                let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
-                let mut batch_label: Matrix = Matrix::new(1, batch_size as usize);
+                let mut batch_data: Matrix = Matrix::init_zero(batch_size as usize, data.width);
+                let mut batch_label: Matrix = Matrix::init_zero(1, batch_size as usize);
 
                 for i in 0..batch_size as usize {
                     let index: usize = batch_indexes[i] as usize;
@@ -283,7 +283,7 @@ impl Model {
     }
 
     pub fn evaluation_output(score: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(1, score.height);
+        let mut output: Matrix = Matrix::init_zero(1, score.height);
         for r in 0..score.height {
             let mut index_max: u32 = 0;
             let mut last_max: f64 = 0.0;
@@ -302,7 +302,7 @@ impl Model {
 
     pub fn predict(&mut self, input: &Matrix) -> Matrix {
         let mut index: u32 = 0;
-        let mut tmp: Matrix = Matrix::new(0, 0);
+        let mut tmp: Matrix = Matrix::init_zero(0, 0);
         for layer in self.layers.iter_mut() {
             if index == 0 {
                 tmp = layer.forward(input, true);

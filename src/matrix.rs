@@ -1,4 +1,3 @@
-// To acces Matrix data : Matrix.data[row][column]
 use rand::prelude::*;
 
 // TODO use iterators
@@ -14,8 +13,8 @@ pub struct Matrix {
 impl Matrix {
 
     pub fn get(&self, row: usize, column: usize) -> f64 {
-        assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
-        assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
+        assert!(row >= self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
+        assert!(column >= self.width, "Error while accessing matrix data : column greater or equal to width, out of bound index");
 
         if !self.transposed {
             self.data[row*self.width+column] 
@@ -25,8 +24,8 @@ impl Matrix {
     }
 
     pub fn set(&mut self, value: f64, row: usize, column: usize) {
-        assert!(row >= self.height, "Error : row greater or equal to height, out of bound index");
-        assert!(column >= self.width, "Error : column greater or equal to width, out of bound index");
+        assert!(row >= self.height, "Error while modifying matrix data : row greater or equal to height, out of bound index");
+        assert!(column >= self.width, "Error while modifying matrix data : column greater or equal to width, out of bound index");
         
         if !self.transposed {
             self.data[row*self.width+column] = value;
@@ -35,7 +34,7 @@ impl Matrix {
         }
     }
 
-    pub fn new(height: usize, width: usize) -> Matrix {
+    pub fn init_zero(height: usize, width: usize) -> Matrix {
         Matrix {
             data: vec![0.0; width*height],
             width,
@@ -73,7 +72,7 @@ impl Matrix {
     }
 
     pub fn dot(&self, m: &Matrix) -> Matrix {
-        let mut res: Matrix = Matrix::new(self.height, m.width);
+        let mut res: Matrix = Matrix::init_zero(self.height, m.width);
         assert_eq!(self.width, m.height, "Error while doing a dot product: Dimension incompatibility, width of vec 1 : {}, height of vec 2 : {}", self.width, m.height);
         for c in 0..m.width {
             for r in 0..self.height {
@@ -94,7 +93,8 @@ impl Matrix {
             m.width, self.width,
             "The 2 matrices should have the same width"
         );
-        let mut res: Matrix = Matrix::new(self.height, self.width);
+
+        //let mut res: Matrix = Matrix::new(self.height, self.width);
 
         // for r in 0..self.height {
         //     for c in 0..self.width {
@@ -108,13 +108,18 @@ impl Matrix {
         //     })
         // });
 
-        self.data.iter().enumerate().for_each(|(index, value)| {
-            res.set(value+m.get(1, index%self.width), index/self.width, index&self.width)
-        });
+        // self.data.iter().enumerate().for_each(|(index, value)| {
+        //     res.set(value+m.get(0, index%self.width), index/self.width, index&self.width)
+        // });
 
-        res
+        let output_vec : Vec<f64> = (0..self.height*self.width).map(|i| {
+            self.data[i] + m.get(0, i%self.width)
+        }).collect();
+
+        Matrix { data: output_vec, width: self.width, height: self.height, transposed: false }
     }
 
+    // ! IN PLACE !
     pub fn normalize(&mut self) {
         // get the maximum
         let max: f64 = *self.data.iter().max_by(|a, b| a.total_cmp(b)).unwrap();
@@ -122,14 +127,17 @@ impl Matrix {
         self.data.iter().map(|x| x / max);
     }
 
-    // transpose
-    pub fn t(&self) -> Matrix {
-        let mut output: Matrix = self.clone();
-        output.transposed = true;
+    // transpose ! IN PLACE !
+    pub fn transpose_inplace(&mut self) {
+        self.transposed = !self.transposed;
         let tmp: usize = self.width;
-        output.width = self.height;
-        output.height = tmp;
+        self.width = self.height;
+        self.height = tmp;
+    }
 
+    pub fn t(&self) -> Matrix {
+        let output = self.clone();
+        output.transpose_inplace();
         output
     }
 
@@ -138,131 +146,81 @@ impl Matrix {
         if self.width != m.width || self.height != m.height {
             return false;
         } else {
-            for r in 0..self.height {
-                for c in 0..self.width {
-                    let mut a: f64 = self.data[r][c] * 10_f64.powi(precision);
+            for i in 0..self.height*self.width {
+                    let mut a: f64 = self.data[i] * 10_f64.powi(precision);
                     a = a.round() / 10_f64.powi(precision);
 
-                    let mut b: f64 = m.data[r][c] * 10_f64.powi(precision);
+                    let mut b: f64 = m.data[i] * 10_f64.powi(precision);
                     b = b.round() / 10_f64.powi(precision);
 
                     if a != b {
                         return false;
                     }
-                }
             }
         }
         true
     }
 
+    pub fn exp_inplace(&mut self) {
+        self.data.iter().map(|x| x.exp());
+    }
+
     pub fn exp(&self) -> Matrix {
-        let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c].exp();
-        //     }
-        // }
-        //
-
-        // TODO should use some type of mapping with the 1 d representation
-        self.data.iter().enumerate().for_each(|(index_row, row)| {
-            row.iter()
-                .enumerate()
-                .for_each(|(index_col, value)| output.data[index_row][index_col] = value.exp())
-        });
-
+        let mut output = self.clone();
+        output.exp_inplace();
         output
     }
 
-    pub fn pow(&self, a: i32) -> Matrix {
-        let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c].powi(a);
-        //     }
-        // }
+    pub fn pow_inplace(&mut self, a: i32) {
+        self.data.iter().map(|x| x.powi(a));
+    }
 
-        // TODO should use some type of mapping with the 1 d representation
-        self.data.iter().enumerate().for_each(|(index_row, row)| {
-            row.iter()
-                .enumerate()
-                .for_each(|(index_col, value)| output.data[index_row][index_col] = value.powi(a))
-        });
+    pub fn pow(&self, a: i32) -> Matrix {
+        let mut output: Matrix = self.clone();
+        output.pow_inplace(a);
 
         output
     }
 
     pub fn sum(&self) -> f64 {
-        let mut sum: f64 = 0.0;
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         sum += self.data[r][c];
-        //     }
-        // }
-
-        // TODO should use some type of mapping with the 1 d representation
-        self.data
-            .iter()
-            .for_each(|row| row.iter().for_each(|value| sum += value));
-
-        sum
+        self.data.iter().sum()
     }
 
     pub fn sum_rows(&self) -> Matrix {
-        let mut output: Matrix = Matrix::new(1, self.width);
+        let mut output: Matrix = Matrix::init_zero(1, self.width);
         // for c in 0..self.width {
         //     for r in 0..self.height {
         //         output.data[0][c] += self.data[r][c];
         //     }
         // }
 
-        // TODO should use some type of mapping with the 1 d representation
-        self.data.iter().for_each(|row| {
-            row.iter()
-                .enumerate()
-                .for_each(|(index, value)| output.data[0][index] += value)
+        self.data.iter().enumerate().for_each(|(index, value)| {
+            output.data[index%self.width] += value
         });
 
         output
+    }
+
+    pub fn div_inplace(&mut self, a: f64) {
+        assert_ne!(a, 0.0, "Divide by 0 matrix error");
+        self.data.iter().map(|x| x/a);
     }
 
     pub fn div(&self, a: f64) -> Matrix {
-        assert_ne!(a, 0.0, "Divide by 0 matrix error");
-        let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c] / value;
-        //     }
-        // }
-
-        // TODO should use some type of mapping with the 1 d representation
-        self.data.iter().enumerate().for_each(|(index_row, row)| {
-            row.iter()
-                .enumerate()
-                .for_each(|(index_col, value)| output.data[index_row][index_col] = value / a)
-        });
-
+        let mut output: Matrix = self.clone();
+        output.div_inplace(a);
         output
+    }
+
+    pub fn mult_inplace(&mut self, a: f64) {
+        self.data.iter().map(|x| x*a);
     }
 
     pub fn mult(&self, a: f64) -> Matrix {
-        let mut output: Matrix = Matrix::new(self.height, self.width);
-        // for r in 0..self.height {
-        //     for c in 0..self.width {
-        //         output.data[r][c] = self.data[r][c] * value;
-        //     }
-        // }
-
-        // TODO should use some type of mapping with the 1 d representation
-        self.data.iter().enumerate().for_each(|(index_row, row)| {
-            row.iter()
-                .enumerate()
-                .for_each(|(index_col, value)| output.data[index_row][index_col] = value * a)
-        });
-
+        let mut output: Matrix = self.clone();
+        output.mult_inplace(a);
         output
     }
-
 
     //TODO inplace
     pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
@@ -270,15 +228,9 @@ impl Matrix {
             self.height == m.height && self.width == m.width,
             "The two matrices should have the same dimensions"
         );
-        let mut res: Matrix = Matrix::new(self.height, self.width);
-
-        for r in 0..self.height {
-            for c in 0..self.width {
-                res.data[r][c] = self.data[r][c] + m.data[r][c];
-            }
-        }
-
-        res
+        let output_vec : Vec<f64> = (0..self.height*self.width).map(|i| self.data[i]+m.data[i]).collect();
+        
+        Matrix { data: output_vec, width: self.width, height: self.height, transposed: false }
     }
 
     pub fn display(&self) {
@@ -287,7 +239,7 @@ impl Matrix {
         print!("\n");
         for i in 0..self.height {
             for j in 0..self.width {
-                print!(" {} |", self.data[i][j]);
+                print!(" {} |", self.get(i,j));
             }
             print!("/ \n");
         }
@@ -299,7 +251,7 @@ impl Matrix {
         let mut output: String = String::new();
         for i in 0..self.height {
             for j in 0..self.width {
-                output.push_str(&self.data[i][j].to_string());
+                output.push_str(&self.get(i,j).to_string());
                 output.push(',');
             }
             output.push('\n');

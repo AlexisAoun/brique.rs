@@ -92,12 +92,15 @@ impl Model {
         for r in 0..score.height {
             for c in 0..score.width {
                 //TODO make a choice, to divide or not to divide
-                if labels.data[0][r] == c as f64 {
+                if labels.get(0, r) == c as f64 {
                     //output.data[r][c] = (score.data[r][c] - 1.0) / score.height as f64;
-                    output.data[r][c] = (score.data[r][c] - 1.0) as f64;
+                    let v : f64 = score.get(r, c) - 1.0 ;
+
+                    output.set(v, r, c);
                 } else {
                     //output.data[r][c] = score.data[r][c] / score.height as f64;
-                    output.data[r][c] = score.data[r][c] as f64;
+                    let v : f64 = score.get(r, c);
+                    output.set(v, r, c);
                 }
             }
         }
@@ -109,10 +112,10 @@ impl Model {
         let mut output: Matrix = Matrix::init_zero(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {
-                if z_minus_1.data[r][c] <= 0.0 {
-                    output.data[r][c] = 0.0;
+                if z_minus_1.get(r, c) <= 0.0 {
+                    output.set(0.0, r, c);
                 } else {
-                    output.data[r][c] = input.data[r][c];
+                    output.set(input.get(r, c), r, c);
                 }
             }
         }
@@ -202,8 +205,10 @@ impl Model {
 
             for i in 0..validation_dataset_size as usize {
                 let index: usize = index_validation[i] as usize;
+                // i have to rewrite here 
+                // data[i] is no longer what it means
                 validation_data.data[i] = data.data[index].clone();
-                validation_label.data[0][i] = labels.data[0][index];
+                validation_label.set(labels.get(0, index), 0, i);
             }
         }
 
@@ -212,7 +217,8 @@ impl Model {
 
             let mut batch_number = 0;
 
-            for batch_indexes in index_matrix.data {
+            for batch_row in 0..index_matrix.height {
+                let batch_indexes : Vec<f64> = index_matrix.get_row(batch_row);
                 let mut batch_data: Matrix = Matrix::init_zero(batch_size as usize, data.width);
                 let mut batch_label: Matrix = Matrix::init_zero(1, batch_size as usize);
 
@@ -274,7 +280,7 @@ impl Model {
 
         let mut sum = 0;
         for index in 0..answer.width {
-            if answer.data[0][index] == labels.data[0][index] {
+            if answer.get(0, index) == labels.get(0, index) {
                 sum += 1;
             }
         }
@@ -287,14 +293,15 @@ impl Model {
         for r in 0..score.height {
             let mut index_max: u32 = 0;
             let mut last_max: f64 = 0.0;
+            //iter ? 
             for c in 0..score.width {
-                if score.data[r][c] > last_max {
-                    last_max = score.data[r][c];
+                if score.get(r,c) > last_max {
+                    last_max = score.get(r,c);
                     index_max = c as u32;
                 }
             }
 
-            output.data[0][r] = index_max as f64;
+            output.set(index_max as f64, 0, r);
         }
 
         output

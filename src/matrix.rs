@@ -12,28 +12,6 @@ pub struct Matrix {
 
 impl Matrix {
 
-    pub fn get(&self, row: usize, column: usize) -> f64 {
-        assert!(row >= self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
-        assert!(column >= self.width, "Error while accessing matrix data : column greater or equal to width, out of bound index");
-
-        if !self.transposed {
-            self.data[row*self.width+column] 
-        } else {
-            self.data[column*self.height+row] 
-        }
-    }
-
-    pub fn set(&mut self, value: f64, row: usize, column: usize) {
-        assert!(row >= self.height, "Error while modifying matrix data : row greater or equal to height, out of bound index");
-        assert!(column >= self.width, "Error while modifying matrix data : column greater or equal to width, out of bound index");
-        
-        if !self.transposed {
-            self.data[row*self.width+column] = value;
-        } else {
-            self.data[column*self.height+row] = value;
-        }
-    }
-
     pub fn init_zero(height: usize, width: usize) -> Matrix {
         Matrix {
             data: vec![0.0; width*height],
@@ -70,6 +48,41 @@ impl Matrix {
         }
 
     }
+
+    pub fn get(&self, row: usize, column: usize) -> f64 {
+        assert!(row >= self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
+        assert!(column >= self.width, "Error while accessing matrix data : column greater or equal to width, out of bound index");
+
+        if !self.transposed {
+            self.data[row*self.width+column] 
+        } else {
+            self.data[column*self.height+row] 
+        }
+    }
+
+    pub fn get_row(&self, row: usize) -> Vec<f64> {
+        assert!(row >= self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
+
+        let mut output : Vec<f64> = Vec::new();
+
+        for i in 0..self.width {
+            output.push(self.get(row,i));
+        }
+
+        output
+    }
+
+    pub fn set(&mut self, value: f64, row: usize, column: usize) {
+        assert!(row >= self.height, "Error while modifying matrix data : row greater or equal to height, out of bound index");
+        assert!(column >= self.width, "Error while modifying matrix data : column greater or equal to width, out of bound index");
+        
+        if !self.transposed {
+            self.data[row*self.width+column] = value;
+        } else {
+            self.data[column*self.height+row] = value;
+        }
+    }
+
 
     pub fn dot(&self, m: &Matrix) -> Matrix {
         let mut res: Matrix = Matrix::init_zero(self.height, m.width);
@@ -136,7 +149,7 @@ impl Matrix {
     }
 
     pub fn t(&self) -> Matrix {
-        let output = self.clone();
+        let mut output = self.clone();
         output.transpose_inplace();
         output
     }
@@ -222,7 +235,7 @@ impl Matrix {
         output
     }
 
-    //TODO inplace
+    // zip iterators the two arrays
     pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
         assert!(
             self.height == m.height && self.width == m.width,

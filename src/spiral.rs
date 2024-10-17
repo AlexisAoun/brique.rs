@@ -3,8 +3,8 @@ use rand::prelude::*;
 
 pub fn generate_spiral_dataset(number_of_points: u32, number_of_classes: u32) -> (Matrix, Matrix) {
     let height: usize = (number_of_points * number_of_classes) as usize;
-    let mut data: Matrix = Matrix::new(height, 2);
-    let mut labels: Matrix = Matrix::new(1, height);
+    let mut data: Matrix = Matrix::init_zero(height, 2);
+    let mut labels: Matrix = Matrix::init_zero(1, height);
 
     for class in 0..number_of_classes {
         let r: Vec<f64> = linspace(0.1, 1.0, number_of_points);
@@ -62,9 +62,14 @@ fn populate_data(
     let class_u = class as usize;
     let mut index_2 = 0;
     for index in n_u * class_u..n_u + (n_u * class_u) {
-        data.data[index][0] = t[index_2].sin() * r[index_2];
-        data.data[index][1] = t[index_2].cos() * r[index_2];
-        labels.data[0][index] = class as f64;
+
+        let x : f64 = t[index_2].sin() * r[index_2];
+        let y : f64 = t[index_2].cos() * r[index_2];
+
+        data.set(x, index, 0);
+        data.set(y, index, 1);
+        labels.set(class as f64, 0, index);
+
         index_2 += 1;
     }
 }

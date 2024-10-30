@@ -26,6 +26,8 @@ pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Matrix {
     let mut output: Matrix = Matrix::init_zero(number_of_batches, batch_size as usize);
 
     // i shouldnt code at 2am. bad things happen
+    // wtf is this
+    // TODO rewrite this
     'outer: for i in 0..number_of_batches {
         for j in 0..batch_size as usize {
             let index: usize = (i * batch_size as usize) + j;
@@ -33,8 +35,7 @@ pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Matrix {
                 output.set(index_table[index] as f64, i, j);
             } else {
                 // just drop if uneven cant be bothered
-                output.data.pop();
-                output.height -= 1;
+                output.pop_last_row();
                 break 'outer;
             }
         }

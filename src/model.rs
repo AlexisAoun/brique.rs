@@ -195,9 +195,11 @@ impl Model {
         let mut validation_data: Matrix = Matrix::init_zero(validation_dataset_size as usize, data.width);
         let mut validation_label: Matrix = Matrix::init_zero(1, validation_dataset_size as usize);
 
-        if debug {
-            index_table = (0..data.height as u32).collect();
-        } else {
+        // first step is to randomize the input data 
+        // and to create the validation dataset
+        // if debugging mode is on, no validation and no randomization
+        if !debug {
+
             index_table = generate_vec_rand_unique(data.height as u32);
 
             index_validation = index_table[0..validation_dataset_size].to_vec();
@@ -205,11 +207,13 @@ impl Model {
 
             for i in 0..validation_dataset_size as usize {
                 let index: usize = index_validation[i] as usize;
-                // i have to rewrite here 
-                // data[i] is no longer what it means
-                validation_data.data[i] = data.data[index].clone();
+                // TODO write test for validation dataset creation
+                validation_data.set_row(data.get_row(index), i);
                 validation_label.set(labels.get(0, index), 0, i);
             }
+
+        } else {
+            index_table = (0..data.height as u32).collect();
         }
 
         for epoch in 0..epochs {
@@ -224,8 +228,8 @@ impl Model {
 
                 for i in 0..batch_size as usize {
                     let index: usize = batch_indexes[i] as usize;
-                    batch_data.data[i] = data.data[index].clone();
-                    batch_label.data[0][i] = labels.data[0][index];
+                    batch_data.set_row(data.get_row(index), i);
+                    batch_label.set(labels.get(0, index),0,i);
                 }
 
                 let score: Matrix = self.evaluate(&batch_data, debug);

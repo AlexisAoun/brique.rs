@@ -4,7 +4,7 @@ use rand::prelude::*;
 // TODO lots of optimizations left
 #[derive(Clone)]
 pub struct Matrix {
-    pub data: Vec<f64>,
+    data: Vec<f64>,
     pub width: usize,
     pub height: usize,
     pub transposed: bool,
@@ -60,6 +60,12 @@ impl Matrix {
         }
     }
 
+    pub fn get_1d(&self, index: usize) -> f64 {
+        assert!(index >= self.data.len(), "Error while accessing matrix data : index greater than vec size, out of bound index");
+        
+        self.data[index]
+    }
+
     pub fn get_row(&self, row: usize) -> Vec<f64> {
         assert!(row >= self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
 
@@ -83,6 +89,19 @@ impl Matrix {
         }
     }
 
+    pub fn set_1d(&mut self, value: f64, index: usize) {
+        assert!(index >= self.data.len(), "Error while accessing matrix data : index greater than vec size, out of bound index");
+        
+        self.data[index] = value;
+    }
+
+    pub fn set_row(&mut self, new_row: Vec<f64>, row: usize) {
+        assert!(row >= self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
+
+        for i in 0..self.width {
+            self.set(new_row[i],row,i);
+        }
+    }
 
     pub fn dot(&self, m: &Matrix) -> Matrix {
         let mut res: Matrix = Matrix::init_zero(self.height, m.width);
@@ -132,10 +151,14 @@ impl Matrix {
         Matrix { data: output_vec, width: self.width, height: self.height, transposed: false }
     }
 
+    pub fn max(&self) -> f64 {
+        *self.data.iter().max_by(|a, b| a.total_cmp(b)).unwrap()
+    }
+
     // ! IN PLACE !
     pub fn normalize(&mut self) {
         // get the maximum
-        let max: f64 = *self.data.iter().max_by(|a, b| a.total_cmp(b)).unwrap();
+        let max: f64 = self.max();
 
         self.data.iter().map(|x| x / max);
     }
@@ -244,6 +267,17 @@ impl Matrix {
         let output_vec : Vec<f64> = (0..self.height*self.width).map(|i| self.data[i]+m.data[i]).collect();
         
         Matrix { data: output_vec, width: self.width, height: self.height, transposed: false }
+    }
+
+    pub fn pop_last_row(&mut self) {
+        let begin_index = self.height*(self.width-1);
+        let last_index = self.height*self.width;
+
+        for i in begin_index..last_index {
+            self.data.pop();
+        }
+
+        self.height -= 1;
     }
 
     pub fn display(&self) {

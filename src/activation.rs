@@ -12,10 +12,14 @@ pub fn softmax(input: &Matrix) -> Matrix {
     let mut input_sub_max: Matrix = Matrix::init_zero(input.height, input.width);
 
     for r in 0..input.height {
-        let max: f64 = *input.get_row(r).iter().max_by(|a, b| a.total_cmp(b)).unwrap();
+        let max: f64 = *input
+            .get_row(r)
+            .iter()
+            .max_by(|a, b| a.total_cmp(b))
+            .unwrap();
 
         for c in 0..input.width {
-            let v = input.get(r,c) - max;
+            let v = input.get(r, c) - max;
             input_sub_max.set(v, r, c);
         }
     }

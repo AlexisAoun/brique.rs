@@ -9,10 +9,9 @@ pub struct Matrix {
 }
 
 impl Matrix {
-
     pub fn init_zero(height: usize, width: usize) -> Matrix {
         Matrix {
-            data: vec![0.0; width*height],
+            data: vec![0.0; width * height],
             width,
             height,
             transposed: false,
@@ -31,20 +30,21 @@ impl Matrix {
             data,
             width,
             height,
-            transposed: false
+            transposed: false,
         }
     }
 
     pub fn init_rand(height: usize, width: usize) -> Matrix {
-        let rand_vec: Vec<f64> = (0..height*width).map(|_| random::<f64>()*0.01).collect();
+        let rand_vec: Vec<f64> = (0..height * width)
+            .map(|_| random::<f64>() * 0.01)
+            .collect();
 
         Matrix {
             data: rand_vec,
             width,
             height,
-            transposed: false
+            transposed: false,
         }
-
     }
 
     pub fn get(&self, row: usize, column: usize) -> f64 {
@@ -52,26 +52,29 @@ impl Matrix {
         assert!(column < self.width, "Error while accessing matrix data : column greater or equal to width, out of bound index");
 
         if !self.transposed {
-            self.data[row*self.width+column] 
+            self.data[row * self.width + column]
         } else {
-            self.data[column*self.height+row] 
+            self.data[column * self.height + row]
         }
     }
 
-    // access to underlying one dimensional Vec 
+    // access to underlying one dimensional Vec
     pub fn get_1d(&self, index: usize) -> f64 {
-        assert!(index < self.data.len(), "Error while accessing matrix data : index greater than vec size, out of bound index");
-        
+        assert!(
+            index < self.data.len(),
+            "Error while accessing matrix data : index greater than vec size, out of bound index"
+        );
+
         self.data[index]
     }
 
     pub fn get_row(&self, row: usize) -> Vec<f64> {
         assert!(row < self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
 
-        let mut output : Vec<f64> = Vec::new();
+        let mut output: Vec<f64> = Vec::new();
 
         for i in 0..self.width {
-            output.push(self.get(row,i));
+            output.push(self.get(row, i));
         }
 
         output
@@ -80,18 +83,21 @@ impl Matrix {
     pub fn set(&mut self, value: f64, row: usize, column: usize) {
         assert!(row < self.height, "Error while modifying matrix data : row greater or equal to height, out of bound index");
         assert!(column < self.width, "Error while modifying matrix data : column greater or equal to width, out of bound index");
-        
+
         if !self.transposed {
-            self.data[row*self.width+column] = value;
+            self.data[row * self.width + column] = value;
         } else {
-            self.data[column*self.height+row] = value;
+            self.data[column * self.height + row] = value;
         }
     }
 
-    // access to underlying one dimensional Vec 
+    // access to underlying one dimensional Vec
     pub fn set_1d(&mut self, value: f64, index: usize) {
-        assert!(index < self.data.len(), "Error while accessing matrix data : index greater than vec size, out of bound index");
-        
+        assert!(
+            index < self.data.len(),
+            "Error while accessing matrix data : index greater than vec size, out of bound index"
+        );
+
         self.data[index] = value;
     }
 
@@ -99,7 +105,7 @@ impl Matrix {
         assert!(row < self.height, "Error while accessing matrix data : row greater or equal to height, out of bound index");
 
         for i in 0..self.width {
-            self.set(new_row[i],row,i);
+            self.set(new_row[i], row, i);
         }
     }
 
@@ -110,7 +116,7 @@ impl Matrix {
             for r in 0..self.height {
                 let mut tmp: f64 = 0.0;
                 for a in 0..self.width {
-                    tmp = tmp + self.get(r,a) * m.get(a,c);
+                    tmp = tmp + self.get(r, a) * m.get(a, c);
                 }
                 res.set(tmp, r, c);
             }
@@ -126,11 +132,16 @@ impl Matrix {
             "The 2 matrices should have the same width"
         );
 
-        let output_vec : Vec<f64> = (0..self.height*self.width).map(|i| {
-            self.data[i] + m.get(0, i%self.width)
-        }).collect();
+        let output_vec: Vec<f64> = (0..self.height * self.width)
+            .map(|i| self.data[i] + m.get(0, i % self.width))
+            .collect();
 
-        Matrix { data: output_vec, width: self.width, height: self.height, transposed: false }
+        Matrix {
+            data: output_vec,
+            width: self.width,
+            height: self.height,
+            transposed: false,
+        }
     }
 
     pub fn max(&self) -> f64 {
@@ -169,16 +180,16 @@ impl Matrix {
         if self.width != m.width || self.height != m.height {
             return false;
         } else {
-            for i in 0..self.height*self.width {
-                    let mut a: f64 = self.data[i] * 10_f64.powi(precision);
-                    a = a.round() / 10_f64.powi(precision);
+            for i in 0..self.height * self.width {
+                let mut a: f64 = self.data[i] * 10_f64.powi(precision);
+                a = a.round() / 10_f64.powi(precision);
 
-                    let mut b: f64 = m.data[i] * 10_f64.powi(precision);
-                    b = b.round() / 10_f64.powi(precision);
+                let mut b: f64 = m.data[i] * 10_f64.powi(precision);
+                b = b.round() / 10_f64.powi(precision);
 
-                    if a != b {
-                        return false;
-                    }
+                if a != b {
+                    return false;
+                }
             }
         }
         true
@@ -212,16 +223,17 @@ impl Matrix {
     pub fn sum_rows(&self) -> Matrix {
         let mut output: Matrix = Matrix::init_zero(1, self.width);
 
-        self.data.iter().enumerate().for_each(|(index, value)| {
-            output.data[index%self.width] += value
-        });
+        self.data
+            .iter()
+            .enumerate()
+            .for_each(|(index, value)| output.data[index % self.width] += value);
 
         output
     }
 
     pub fn div_inplace(&mut self, a: f64) {
         assert_ne!(a, 0.0, "Divide by 0 matrix error");
-        self.data = self.data.iter().map(|x| x/a).collect();
+        self.data = self.data.iter().map(|x| x / a).collect();
     }
 
     pub fn div(&self, a: f64) -> Matrix {
@@ -231,7 +243,7 @@ impl Matrix {
     }
 
     pub fn mult_inplace(&mut self, a: f64) {
-        self.data = self.data.iter().map(|x| x*a).collect();
+        self.data = self.data.iter().map(|x| x * a).collect();
     }
 
     pub fn mult(&self, a: f64) -> Matrix {
@@ -246,14 +258,21 @@ impl Matrix {
             self.height == m.height && self.width == m.width,
             "The two matrices should have the same dimensions"
         );
-        let output_vec : Vec<f64> = (0..self.height*self.width).map(|i| self.data[i]+m.data[i]).collect();
-        
-        Matrix { data: output_vec, width: self.width, height: self.height, transposed: false }
+        let output_vec: Vec<f64> = (0..self.height * self.width)
+            .map(|i| self.data[i] + m.data[i])
+            .collect();
+
+        Matrix {
+            data: output_vec,
+            width: self.width,
+            height: self.height,
+            transposed: false,
+        }
     }
 
     pub fn pop_last_row(&mut self) {
-        let begin_index = self.height*(self.width-1);
-        let last_index = self.height*self.width;
+        let begin_index = self.height * (self.width - 1);
+        let last_index = self.height * self.width;
 
         for _i in begin_index..last_index {
             self.data.pop();
@@ -268,7 +287,7 @@ impl Matrix {
         print!("\n");
         for i in 0..self.height {
             for j in 0..self.width {
-                print!(" {} |", self.get(i,j));
+                print!(" {} |", self.get(i, j));
             }
             print!("/ \n");
         }
@@ -280,7 +299,7 @@ impl Matrix {
         let mut output: String = String::new();
         for i in 0..self.height {
             for j in 0..self.width {
-                output.push_str(&self.get(i,j).to_string());
+                output.push_str(&self.get(i, j).to_string());
                 output.push(',');
             }
             output.push('\n');
@@ -298,86 +317,85 @@ mod tests {
     use super::Matrix;
 
     fn get_test_matrix() -> Matrix {
-        let matrix = Matrix::init(2, 3, vec!(0.1, 1.3, 0.5,
-                                            12.0, 1.01, -1000.0)); 
+        let matrix = Matrix::init(2, 3, vec![0.1, 1.3, 0.5, 12.0, 1.01, -1000.0]);
 
         matrix
     }
 
-    #[test] 
+    #[test]
     fn valid_get() {
-        let matrix = get_test_matrix(); 
+        let matrix = get_test_matrix();
 
-        assert_eq!(matrix.get(0,0), 0.1);
-        assert_eq!(matrix.get(0,1), 1.3);
-        assert_eq!(matrix.get(0,2), 0.5);
-        assert_eq!(matrix.get(1,0), 12.0);
-        assert_eq!(matrix.get(1,1), 1.01);
-        assert_eq!(matrix.get(1,2), -1000.0);
+        assert_eq!(matrix.get(0, 0), 0.1);
+        assert_eq!(matrix.get(0, 1), 1.3);
+        assert_eq!(matrix.get(0, 2), 0.5);
+        assert_eq!(matrix.get(1, 0), 12.0);
+        assert_eq!(matrix.get(1, 1), 1.01);
+        assert_eq!(matrix.get(1, 2), -1000.0);
     }
 
-    #[test] 
+    #[test]
     fn valid_get_on_transposed() {
         let mut matrix = get_test_matrix();
         matrix.transpose_inplace();
-        
-        assert_eq!(matrix.get(0,0), 0.1);
-        assert_eq!(matrix.get(0,1), 12.0);
-        assert_eq!(matrix.get(1,0), 1.3);
-        assert_eq!(matrix.get(1,1), 1.01);
-        assert_eq!(matrix.get(2,0), 0.5);
-        assert_eq!(matrix.get(2,1), -1000.0);
+
+        assert_eq!(matrix.get(0, 0), 0.1);
+        assert_eq!(matrix.get(0, 1), 12.0);
+        assert_eq!(matrix.get(1, 0), 1.3);
+        assert_eq!(matrix.get(1, 1), 1.01);
+        assert_eq!(matrix.get(2, 0), 0.5);
+        assert_eq!(matrix.get(2, 1), -1000.0);
     }
 
-    #[test] 
+    #[test]
     fn valid_get_on_untransposed() {
-        let mut matrix = get_test_matrix(); 
+        let mut matrix = get_test_matrix();
         matrix.transpose_inplace();
         matrix.transpose_inplace();
 
-        assert_eq!(matrix.get(0,0), 0.1);
-        assert_eq!(matrix.get(0,1), 1.3);
-        assert_eq!(matrix.get(0,2), 0.5);
-        assert_eq!(matrix.get(1,0), 12.0);
-        assert_eq!(matrix.get(1,1), 1.01);
-        assert_eq!(matrix.get(1,2), -1000.0);
+        assert_eq!(matrix.get(0, 0), 0.1);
+        assert_eq!(matrix.get(0, 1), 1.3);
+        assert_eq!(matrix.get(0, 2), 0.5);
+        assert_eq!(matrix.get(1, 0), 12.0);
+        assert_eq!(matrix.get(1, 1), 1.01);
+        assert_eq!(matrix.get(1, 2), -1000.0);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_get_column_out_of_bound() {
         let matrix = get_test_matrix();
 
-        matrix.get(2,0);
+        matrix.get(2, 0);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_get_row_out_of_bound() {
         let matrix = get_test_matrix();
 
-        matrix.get(5,1);
+        matrix.get(5, 1);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_get_tranposed_column_out_of_bound() {
         let mut matrix = get_test_matrix();
         matrix.transpose_inplace();
 
-        matrix.get(0,2);
+        matrix.get(0, 2);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_get_transposed_row_out_of_bound() {
         let mut matrix = get_test_matrix();
         matrix.transpose_inplace();
 
-        matrix.get(3,1);
+        matrix.get(3, 1);
     }
 
-    #[test] 
+    #[test]
     fn valid_get_row() {
         let matrix = get_test_matrix();
         let expected_vec = vec![12.0, 1.01, -1000.0];
@@ -385,7 +403,7 @@ mod tests {
         assert_eq![matrix.get_row(1), expected_vec];
     }
 
-    #[test] 
+    #[test]
     fn valid_get_row_on_transposed() {
         let mut matrix = get_test_matrix();
         let expected_vec = vec![0.5, -1000.0];
@@ -394,7 +412,7 @@ mod tests {
         assert_eq![matrix.get_row(2), expected_vec];
     }
 
-    #[test] 
+    #[test]
     fn valid_set() {
         let mut matrix = get_test_matrix();
         matrix.set(69.69, 1, 1);
@@ -402,41 +420,41 @@ mod tests {
         assert_eq![matrix.data[4], 69.69];
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_set_column_out_of_bound() {
         let mut matrix = get_test_matrix();
 
-        matrix.set(69.69,2,0);
+        matrix.set(69.69, 2, 0);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_set_row_out_of_bound() {
         let mut matrix = get_test_matrix();
 
-        matrix.set(69.69,5,1);
+        matrix.set(69.69, 5, 1);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_set_tranposed_column_out_of_bound() {
         let mut matrix = get_test_matrix();
         matrix.transpose_inplace();
 
-        matrix.set(69.69, 0,2);
+        matrix.set(69.69, 0, 2);
     }
 
-    #[test] 
+    #[test]
     #[should_panic]
     fn unvalid_set_transposed_row_out_of_bound() {
         let mut matrix = get_test_matrix();
         matrix.transpose_inplace();
 
-        matrix.set(69.69, 3,1);
+        matrix.set(69.69, 3, 1);
     }
 
-    #[test] 
+    #[test]
     fn valid_set_row() {
         let mut matrix = get_test_matrix();
         let new_row = vec![0.8, 0.1, 1203123.0];
@@ -446,7 +464,7 @@ mod tests {
         assert_eq![matrix.get_row(0), new_row];
     }
 
-    #[test] 
+    #[test]
     fn valid_set_row_on_transposed() {
         let mut matrix = get_test_matrix();
         let new_row = vec![0.8, 0.1];
@@ -457,35 +475,37 @@ mod tests {
         assert_eq![matrix.get_row(2), new_row];
     }
 
-    #[test] 
+    #[test]
     fn max_test() {
         let matrix = get_test_matrix();
 
         assert_eq![matrix.max(), 12.0];
     }
 
-    #[test] 
+    #[test]
     fn min_test() {
         let matrix = get_test_matrix();
 
         assert_eq![matrix.min(), -1000.0];
     }
-    
-    #[test] 
+
+    #[test]
     fn add_values_of_a_row_test() {
         let test_data = parse_test_csv("tests/test_data/add_values_of_a_row_test.csv".to_string());
 
-        assert!(test_data[0].add_1d_matrix_to_all_rows(&test_data[1]).is_equal(&test_data[2], 10));
+        assert!(test_data[0]
+            .add_1d_matrix_to_all_rows(&test_data[1])
+            .is_equal(&test_data[2], 10));
     }
 
-    #[test] 
+    #[test]
     fn dot_product_test() {
         let test_data = parse_test_csv("tests/test_data/dot_product_test.csv".to_string());
 
         assert!(test_data[0].dot(&test_data[1]).is_equal(&test_data[2], 8));
     }
 
-    #[test] 
+    #[test]
     fn normalize_test() {
         let mut test_data = parse_test_csv("tests/test_data/normalize_test.csv".to_string());
 

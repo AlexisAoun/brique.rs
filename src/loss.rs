@@ -8,7 +8,7 @@ pub fn one_hot_encoding(input: &Matrix, labels: &Matrix) -> Matrix {
     );
     let mut output = Matrix::init_zero(1, input.height);
     for c in 0..input.height {
-        let v = input.get(c, labels.get(0,c) as usize);
+        let v = input.get(c, labels.get(0, c) as usize);
         output.set(v, 0, c);
     }
 

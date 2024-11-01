@@ -50,7 +50,7 @@ impl Layer {
         let mut output: Matrix = Matrix::init_zero(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {
-                output.set(relu(input.get(r,c)), r, c);
+                output.set(relu(input.get(r, c)), r, c);
             }
         }
         output

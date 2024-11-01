@@ -97,9 +97,10 @@ pub fn extract_labels(path: &str) -> Matrix {
     let slice: Vec<u8> = res[8..].to_vec();
     let mut output: Matrix = Matrix::init_zero(1, slice.len());
 
-    slice.iter().enumerate().for_each(|(index, value)| {
-        output.set(*value as f64, 0, index)
-    });
+    slice
+        .iter()
+        .enumerate()
+        .for_each(|(index, value)| output.set(*value as f64, 0, index));
 
     output
 }

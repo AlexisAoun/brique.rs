@@ -62,9 +62,8 @@ fn populate_data(
     let class_u = class as usize;
     let mut index_2 = 0;
     for index in n_u * class_u..n_u + (n_u * class_u) {
-
-        let x : f64 = t[index_2].sin() * r[index_2];
-        let y : f64 = t[index_2].cos() * r[index_2];
+        let x: f64 = t[index_2].sin() * r[index_2];
+        let y: f64 = t[index_2].cos() * r[index_2];
 
         data.set(x, index, 0);
         data.set(y, index, 1);

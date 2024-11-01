@@ -94,12 +94,12 @@ impl Model {
                 //TODO make a choice, to divide or not to divide
                 if labels.get(0, r) == c as f64 {
                     //output.data[r][c] = (score.data[r][c] - 1.0) / score.height as f64;
-                    let v : f64 = score.get(r, c) - 1.0 ;
+                    let v: f64 = score.get(r, c) - 1.0;
 
                     output.set(v, r, c);
                 } else {
                     //output.data[r][c] = score.data[r][c] / score.height as f64;
-                    let v : f64 = score.get(r, c);
+                    let v: f64 = score.get(r, c);
                     output.set(v, r, c);
                 }
             }
@@ -125,7 +125,7 @@ impl Model {
 
     pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix, debug: bool) {
         let mut index: usize = self.layers.len() - 1;
-        //too much cloning going on here ? 
+        //too much cloning going on here ?
         let mut d_z: Matrix = d_score.clone();
 
         loop {
@@ -192,14 +192,14 @@ impl Model {
 
         let mut index_table: Vec<u32>;
         let index_validation: Vec<u32>;
-        let mut validation_data: Matrix = Matrix::init_zero(validation_dataset_size as usize, data.width);
+        let mut validation_data: Matrix =
+            Matrix::init_zero(validation_dataset_size as usize, data.width);
         let mut validation_label: Matrix = Matrix::init_zero(1, validation_dataset_size as usize);
 
-        // first step is to randomize the input data 
+        // first step is to randomize the input data
         // and to create the validation dataset
         // if debugging mode is on, no validation and no randomization
         if !debug {
-
             index_table = generate_vec_rand_unique(data.height as u32);
 
             index_validation = index_table[0..validation_dataset_size].to_vec();
@@ -211,7 +211,6 @@ impl Model {
                 validation_data.set_row(&data.get_row(index), i);
                 validation_label.set(labels.get(0, index), 0, i);
             }
-
         } else {
             index_table = (0..data.height as u32).collect();
         }
@@ -222,14 +221,14 @@ impl Model {
             let mut batch_number = 0;
 
             for batch_row in 0..index_matrix.height {
-                let batch_indexes : Vec<f64> = index_matrix.get_row(batch_row);
+                let batch_indexes: Vec<f64> = index_matrix.get_row(batch_row);
                 let mut batch_data: Matrix = Matrix::init_zero(batch_size as usize, data.width);
                 let mut batch_label: Matrix = Matrix::init_zero(1, batch_size as usize);
 
                 for i in 0..batch_size as usize {
                     let index: usize = batch_indexes[i] as usize;
                     batch_data.set_row(&data.get_row(index), i);
-                    batch_label.set(labels.get(0, index),0,i);
+                    batch_label.set(labels.get(0, index), 0, i);
                 }
 
                 let score: Matrix = self.evaluate(&batch_data, debug);
@@ -297,10 +296,10 @@ impl Model {
         for r in 0..score.height {
             let mut index_max: u32 = 0;
             let mut last_max: f64 = 0.0;
-            //iter ? 
+            //iter ?
             for c in 0..score.width {
-                if score.get(r,c) > last_max {
-                    last_max = score.get(r,c);
+                if score.get(r, c) > last_max {
+                    last_max = score.get(r, c);
                     index_max = c as u32;
                 }
             }

@@ -6,5 +6,4 @@ pub mod matrix;
 pub mod model;
 pub mod parse_test_csv;
 pub mod spiral;
-pub mod tests;
 pub mod utils;

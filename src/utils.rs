@@ -23,18 +23,19 @@ pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Matrix {
     if index_table.len() % (batch_size as usize) != 0 {
         number_of_batches += 1;
     }
-    let mut output: Matrix = Matrix::new(number_of_batches, batch_size as usize);
+    let mut output: Matrix = Matrix::init_zero(number_of_batches, batch_size as usize);
 
     // i shouldnt code at 2am. bad things happen
+    // wtf is this
+    // TODO rewrite this
     'outer: for i in 0..number_of_batches {
         for j in 0..batch_size as usize {
             let index: usize = (i * batch_size as usize) + j;
             if index < index_table.len() {
-                output.data[i][j] = index_table[index] as f64;
+                output.set(index_table[index] as f64, i, j);
             } else {
                 // just drop if uneven cant be bothered
-                output.data.pop();
-                output.height -= 1;
+                output.pop_last_row();
                 break 'outer;
             }
         }
@@ -94,9 +95,11 @@ pub fn extract_labels(path: &str) -> Matrix {
     let res: Vec<u8> = read(path).unwrap();
     check_label_file_header(&res);
     let slice: Vec<u8> = res[8..].to_vec();
-    let mut output: Matrix = Matrix::new(1, slice.len());
+    let mut output: Matrix = Matrix::init_zero(1, slice.len());
 
-    output.data[0] = slice.into_iter().map(|x| x as f64).collect();
+    slice.iter().enumerate().for_each(|(index, value)| {
+        output.set(*value as f64, 0, index)
+    });
 
     output
 }
@@ -112,7 +115,7 @@ pub fn extract_images(path: &str) -> Matrix {
 
     let pixels_per_image: u32 = array_size_row * array_size_column;
 
-    let mut output: Matrix = Matrix::new(
+    let mut output: Matrix = Matrix::init_zero(
         array_size.try_into().unwrap(),
         pixels_per_image.try_into().unwrap(),
     );
@@ -121,7 +124,7 @@ pub fn extract_images(path: &str) -> Matrix {
     for i in res[16..].to_vec() {
         let x: usize = (index / pixels_per_image).try_into().unwrap();
         let y: usize = (index % pixels_per_image).try_into().unwrap();
-        output.data[x][y] = i as f64;
+        output.set(i as f64, x, y);
         index += 1;
     }
 

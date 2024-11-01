@@ -9,22 +9,25 @@ pub fn relu(input: f64) -> f64 {
 }
 
 pub fn softmax(input: &Matrix) -> Matrix {
-    let mut input_sub_max: Matrix = Matrix::new(input.height, input.width);
+    let mut input_sub_max: Matrix = Matrix::init_zero(input.height, input.width);
 
     for r in 0..input.height {
-        let max: &f64 = input.data[r].iter().max_by(|a, b| a.total_cmp(b)).unwrap();
+        let max: f64 = *input.get_row(r).iter().max_by(|a, b| a.total_cmp(b)).unwrap();
+
         for c in 0..input.width {
-            input_sub_max.data[r][c] = input.data[r][c] - max;
+            let v = input.get(r,c) - max;
+            input_sub_max.set(v, r, c);
         }
     }
 
     let input_exp: Matrix = input_sub_max.exp();
-    let mut output: Matrix = Matrix::new(input.height, input.width);
+    let mut output: Matrix = Matrix::init_zero(input.height, input.width);
 
     for r in 0..input.height {
-        let sum: f64 = input_exp.data[r].iter().sum();
+        let sum: f64 = input_exp.get_row(r).iter().sum();
         for c in 0..input.width {
-            output.data[r][c] = input_exp.data[r][c] / sum;
+            let v = input_exp.get(r, c) / sum;
+            output.set(v, r, c);
         }
     }
 

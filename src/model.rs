@@ -36,14 +36,14 @@ impl Model {
             lambda,
             learning_step,
             layers_debug: Vec::new(),
-            input: Matrix::new(2, 2),
-            input_label: Matrix::new(2, 2),
+            input: Matrix::init_zero(2, 2),
+            input_label: Matrix::init_zero(2, 2),
             itermediate_evaluation_results: Vec::new(),
-            softmax_output: Matrix::new(2, 2),
+            softmax_output: Matrix::init_zero(2, 2),
             d_zs: Vec::new(),
             d_ws: Vec::new(),
             d_bs: Vec::new(),
-            d_score: Matrix::new(2, 3),
+            d_score: Matrix::init_zero(2, 3),
             loss: 0.0,
             reg_loss: 0.0,
             data_loss: 0.0,
@@ -53,7 +53,7 @@ impl Model {
     }
     pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
         let mut index: u32 = 0;
-        let mut tmp: Matrix = Matrix::new(0, 0);
+        let mut tmp: Matrix = Matrix::init_zero(0, 0);
         for layer in self.layers.iter_mut() {
             if index == 0 {
                 tmp = layer.forward(input, false);
@@ -88,16 +88,19 @@ impl Model {
     }
 
     pub fn compute_d_score(score: &Matrix, labels: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(score.height, score.width);
+        let mut output: Matrix = Matrix::init_zero(score.height, score.width);
         for r in 0..score.height {
             for c in 0..score.width {
                 //TODO make a choice, to divide or not to divide
-                if labels.data[0][r] == c as f64 {
+                if labels.get(0, r) == c as f64 {
                     //output.data[r][c] = (score.data[r][c] - 1.0) / score.height as f64;
-                    output.data[r][c] = (score.data[r][c] - 1.0) as f64;
+                    let v : f64 = score.get(r, c) - 1.0 ;
+
+                    output.set(v, r, c);
                 } else {
                     //output.data[r][c] = score.data[r][c] / score.height as f64;
-                    output.data[r][c] = score.data[r][c] as f64;
+                    let v : f64 = score.get(r, c);
+                    output.set(v, r, c);
                 }
             }
         }
@@ -106,13 +109,13 @@ impl Model {
     }
 
     pub fn compute_d_relu(input: &Matrix, z_minus_1: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(input.height, input.width);
+        let mut output: Matrix = Matrix::init_zero(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {
-                if z_minus_1.data[r][c] <= 0.0 {
-                    output.data[r][c] = 0.0;
+                if z_minus_1.get(r, c) <= 0.0 {
+                    output.set(0.0, r, c);
                 } else {
-                    output.data[r][c] = input.data[r][c];
+                    output.set(input.get(r, c), r, c);
                 }
             }
         }
@@ -122,6 +125,7 @@ impl Model {
 
     pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix, debug: bool) {
         let mut index: usize = self.layers.len() - 1;
+        //too much cloning going on here ? 
         let mut d_z: Matrix = d_score.clone();
 
         loop {
@@ -187,12 +191,14 @@ impl Model {
 
         let mut index_table: Vec<u32>;
         let index_validation: Vec<u32>;
-        let mut validation_data: Matrix = Matrix::new(validation_dataset_size as usize, data.width);
-        let mut validation_label: Matrix = Matrix::new(1, validation_dataset_size as usize);
+        let mut validation_data: Matrix = Matrix::init_zero(validation_dataset_size as usize, data.width);
+        let mut validation_label: Matrix = Matrix::init_zero(1, validation_dataset_size as usize);
 
-        if debug {
-            index_table = (0..data.height as u32).collect();
-        } else {
+        // first step is to randomize the input data 
+        // and to create the validation dataset
+        // if debugging mode is on, no validation and no randomization
+        if !debug {
+
             index_table = generate_vec_rand_unique(data.height as u32);
 
             index_validation = index_table[0..validation_dataset_size].to_vec();
@@ -200,9 +206,13 @@ impl Model {
 
             for i in 0..validation_dataset_size as usize {
                 let index: usize = index_validation[i] as usize;
-                validation_data.data[i] = data.data[index].clone();
-                validation_label.data[0][i] = labels.data[0][index];
+                // TODO write test for validation dataset creation
+                validation_data.set_row(&data.get_row(index), i);
+                validation_label.set(labels.get(0, index), 0, i);
             }
+
+        } else {
+            index_table = (0..data.height as u32).collect();
         }
 
         for epoch in 0..epochs {
@@ -210,14 +220,15 @@ impl Model {
 
             let mut batch_number = 0;
 
-            for batch_indexes in index_matrix.data {
-                let mut batch_data: Matrix = Matrix::new(batch_size as usize, data.width);
-                let mut batch_label: Matrix = Matrix::new(1, batch_size as usize);
+            for batch_row in 0..index_matrix.height {
+                let batch_indexes : Vec<f64> = index_matrix.get_row(batch_row);
+                let mut batch_data: Matrix = Matrix::init_zero(batch_size as usize, data.width);
+                let mut batch_label: Matrix = Matrix::init_zero(1, batch_size as usize);
 
                 for i in 0..batch_size as usize {
                     let index: usize = batch_indexes[i] as usize;
-                    batch_data.data[i] = data.data[index].clone();
-                    batch_label.data[0][i] = labels.data[0][index];
+                    batch_data.set_row(&data.get_row(index), i);
+                    batch_label.set(labels.get(0, index),0,i);
                 }
 
                 let score: Matrix = self.evaluate(&batch_data, debug);
@@ -272,7 +283,7 @@ impl Model {
 
         let mut sum = 0;
         for index in 0..answer.width {
-            if answer.data[0][index] == labels.data[0][index] {
+            if answer.get(0, index) == labels.get(0, index) {
                 sum += 1;
             }
         }
@@ -281,18 +292,19 @@ impl Model {
     }
 
     pub fn evaluation_output(score: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(1, score.height);
+        let mut output: Matrix = Matrix::init_zero(1, score.height);
         for r in 0..score.height {
             let mut index_max: u32 = 0;
             let mut last_max: f64 = 0.0;
+            //iter ? 
             for c in 0..score.width {
-                if score.data[r][c] > last_max {
-                    last_max = score.data[r][c];
+                if score.get(r,c) > last_max {
+                    last_max = score.get(r,c);
                     index_max = c as u32;
                 }
             }
 
-            output.data[0][r] = index_max as f64;
+            output.set(index_max as f64, 0, r);
         }
 
         output
@@ -300,7 +312,7 @@ impl Model {
 
     pub fn predict(&mut self, input: &Matrix) -> Matrix {
         let mut index: u32 = 0;
-        let mut tmp: Matrix = Matrix::new(0, 0);
+        let mut tmp: Matrix = Matrix::init_zero(0, 0);
         for layer in self.layers.iter_mut() {
             if index == 0 {
                 tmp = layer.forward(input, true);

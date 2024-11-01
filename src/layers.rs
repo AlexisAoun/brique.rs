@@ -14,9 +14,9 @@ impl Layer {
     pub fn init(input_size: u32, size: u32, activation: bool) -> Layer {
         Layer {
             weights_t: Matrix::init_rand(input_size.try_into().unwrap(), size.try_into().unwrap()),
-            biases: Matrix::new(1, size.try_into().unwrap()),
+            biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
-            output: Matrix::new(0, 0),
+            output: Matrix::init_zero(0, 0),
         }
     }
 
@@ -24,15 +24,15 @@ impl Layer {
     pub fn init_test(size: u32, activation: bool, weights_t: Matrix) -> Layer {
         Layer {
             weights_t,
-            biases: Matrix::new(1, size.try_into().unwrap()),
+            biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
-            output: Matrix::new(0, 0),
+            output: Matrix::init_zero(0, 0),
         }
     }
 
     pub fn forward(&mut self, input: &Matrix, predict: bool) -> Matrix {
         let mut tmp_output = input.dot(&self.weights_t);
-        tmp_output = tmp_output.add_value_to_all_rows(&self.biases);
+        tmp_output = tmp_output.add_1d_matrix_to_all_rows(&self.biases);
 
         if self.activation {
             tmp_output = self.activation(&tmp_output);
@@ -47,10 +47,10 @@ impl Layer {
 
     //implementing ReLu for this project
     fn activation(&self, input: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::new(input.height, input.width);
+        let mut output: Matrix = Matrix::init_zero(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {
-                output.data[r][c] = relu(input.data[r][c]);
+                output.set(relu(input.get(r,c)), r, c);
             }
         }
         output

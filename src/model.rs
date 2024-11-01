@@ -207,7 +207,7 @@ impl Model {
             for i in 0..validation_dataset_size as usize {
                 let index: usize = index_validation[i] as usize;
                 // TODO write test for validation dataset creation
-                validation_data.set_row(data.get_row(index), i);
+                validation_data.set_row(&data.get_row(index), i);
                 validation_label.set(labels.get(0, index), 0, i);
             }
 
@@ -227,7 +227,7 @@ impl Model {
 
                 for i in 0..batch_size as usize {
                     let index: usize = batch_indexes[i] as usize;
-                    batch_data.set_row(data.get_row(index), i);
+                    batch_data.set_row(&data.get_row(index), i);
                     batch_label.set(labels.get(0, index),0,i);
                 }
 

@@ -8,6 +8,7 @@ pub struct Layer {
     pub biases: Matrix,
     pub activation: bool,
     pub output: Matrix,
+    pub d_output_next_layer: Matrix
 }
 
 impl Layer {
@@ -17,6 +18,7 @@ impl Layer {
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
             output: Matrix::init_zero(0, 0),
+            d_output_next_layer: Matrix::init_zero(0, 0),
         }
     }
 
@@ -27,6 +29,7 @@ impl Layer {
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
             output: Matrix::init_zero(0, 0),
+            d_output_next_layer: Matrix::init_zero(0, 0),
         }
     }
 

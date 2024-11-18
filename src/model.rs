@@ -140,6 +140,7 @@ impl Model {
                 Some(layer) => layer.output,
             };
 
+            // compute W and B gradient
             let d_w_tmp: Matrix = z_minus_1.t().dot(&d_z);
             let d_w = d_w_tmp.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
 
@@ -151,17 +152,19 @@ impl Model {
                 self.d_bs.push(d_b.clone());
             }
 
+            // compute gradient of the score for the next layer
             d_z = d_z.dot(&self.layers[index].weights_t.t());
+            if index > 0  {
+                if self.layers[index - 1].activation {
+                    d_z = Model::compute_d_relu(&d_z, &z_minus_1);
+                }
+            }
 
             self.layers[index].update_weigths(&d_w, self.learning_step);
             self.layers[index].update_biases(&d_b, self.learning_step);
 
             if index == 0 {
                 break;
-            }
-
-            if self.layers[index - 1].activation {
-                d_z = Model::compute_d_relu(&d_z, &z_minus_1);
             }
 
             index -= 1;

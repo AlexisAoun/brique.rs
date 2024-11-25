@@ -108,7 +108,7 @@ mod tests {
             model.d_ws.iter().enumerate().for_each(|(i, m)| {
                 assert!(
                     m.is_equal(&expected_params[(index * 21) + (i * 3) + 12], precision),
-                    "Gradient of the weights in iteration {}, layer {}, incorrect values",
+                    "Gradient of the weights in iteration {}, index {}, incorrect values",
                     index + 1,
                     i + 1
                 )
@@ -118,7 +118,7 @@ mod tests {
             model.d_bs.iter().enumerate().for_each(|(i, m)| {
                 assert!(
                     m.is_equal(&expected_params[(index * 21) + (i * 3) + 13], precision),
-                    "Gradient of the biases in iteration {}, layer {}, incorrect values",
+                    "Gradient of the biases in iteration {}, index {}, incorrect values",
                     index + 1,
                     i + 1
                 )
@@ -133,7 +133,7 @@ mod tests {
                     if i > 0 {
                         assert!(
                             m.is_equal(&expected_params[(index * 21) + ((i-1)*3) + 14], precision),
-                            "Gradient of the hidden layer score in iteration {}, layer {}, incorrect values",
+                            "Gradient of the hidden layer score in iteration {}, index {}, incorrect values",
                             index + 1,
                             i + 1
                         )

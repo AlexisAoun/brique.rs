@@ -8,7 +8,6 @@ pub struct Layer {
     pub biases: Matrix,
     pub activation: bool,
     pub output: Matrix,
-    pub d_output_next_layer: Matrix
 }
 
 impl Layer {
@@ -18,7 +17,6 @@ impl Layer {
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
             output: Matrix::init_zero(0, 0),
-            d_output_next_layer: Matrix::init_zero(0, 0),
         }
     }
 
@@ -29,7 +27,6 @@ impl Layer {
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
             output: Matrix::init_zero(0, 0),
-            d_output_next_layer: Matrix::init_zero(0, 0),
         }
     }
 
@@ -46,6 +43,49 @@ impl Layer {
         }
 
         tmp_output
+    }
+
+    // d_w(i) = input(i) * d_output(i)
+    // can be rewritten
+    // d_w(i) = output(i-1) * d_output(i) -> if i > 0
+    // d_b(i) = sum of the rows of d_output(i)
+    // d_output(i) = d_output(i+1) * d_w(i+1)
+    pub fn backprop(
+        &mut self,
+        d_z: &Matrix,
+        z_minus_1: &Matrix,
+        previous_layer_activation: bool,
+        lambda: f64,
+        learning_step: f64,
+        is_input_layer: bool,
+        debug: bool,
+        debug_array_d_weights: &mut Vec<Matrix>,
+        debug_array_d_biaises: &mut Vec<Matrix>,
+        debug_array_d_outputs: &mut Vec<Matrix>,
+    ) -> Matrix {
+        let d_w: Matrix = z_minus_1
+            .t()
+            .dot(d_z)
+            .add_two_matrices(&self.weights_t.mult(lambda));
+        let d_b: Matrix = d_z.sum_rows();
+
+        if debug {
+            debug_array_d_outputs.push(d_z.clone());
+            debug_array_d_weights.push(d_w.clone());
+            debug_array_d_biaises.push(d_b.clone());
+        }
+
+        let mut new_d_z = d_z.dot(&self.weights_t.t());
+        if !is_input_layer {
+            if previous_layer_activation {
+                new_d_z.compute_d_relu_inplace(z_minus_1);
+            }
+        }
+
+        self.update_weigths(&d_w, learning_step);
+        self.update_biases(&d_b, learning_step);
+
+        new_d_z
     }
 
     //implementing ReLu for this project

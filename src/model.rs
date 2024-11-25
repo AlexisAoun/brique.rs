@@ -108,62 +108,38 @@ impl Model {
         output
     }
 
-    pub fn compute_d_relu(input: &Matrix, z_minus_1: &Matrix) -> Matrix {
-        let mut output: Matrix = Matrix::init_zero(input.height, input.width);
-        for r in 0..input.height {
-            for c in 0..input.width {
-                if z_minus_1.get(r, c) <= 0.0 {
-                    output.set(0.0, r, c);
-                } else {
-                    output.set(input.get(r, c), r, c);
-                }
-            }
-        }
-
-        output
-    }
-
-    pub fn update_params(&mut self, d_score: &Matrix, input: &Matrix, debug: bool) {
+    pub fn update_params(&mut self, d_score: Matrix, input: Matrix, debug: bool) {
         let mut index: usize = self.layers.len() - 1;
-        //too much cloning going on here ?
-        let mut d_z: Matrix = d_score.clone();
+        let mut d_z: Matrix = d_score;
 
         loop {
-            let mut previous_layer: Option<Layer> = None;
-
             if index > 0 {
-                previous_layer = Some(self.layers[index - 1].clone());
-            }
-
-            let z_minus_1: Matrix = match previous_layer {
-                None => input.clone(),
-                Some(layer) => layer.output,
-            };
-
-            // compute W and B gradient
-            let d_w_tmp: Matrix = z_minus_1.t().dot(&d_z);
-            let d_w = d_w_tmp.add_two_matrices(&self.layers[index].weights_t.mult(self.lambda));
-
-            let d_b: Matrix = d_z.sum_rows();
-
-            if debug {
-                self.d_zs.push(d_z.clone());
-                self.d_ws.push(d_w.clone());
-                self.d_bs.push(d_b.clone());
-            }
-
-            // compute gradient of the score for the next layer
-            d_z = d_z.dot(&self.layers[index].weights_t.t());
-            if index > 0  {
-                if self.layers[index - 1].activation {
-                    d_z = Model::compute_d_relu(&d_z, &z_minus_1);
-                }
-            }
-
-            self.layers[index].update_weigths(&d_w, self.learning_step);
-            self.layers[index].update_biases(&d_b, self.learning_step);
-
-            if index == 0 {
+                let (l, r) = self.layers.split_at_mut(index);
+                d_z = r[0].backprop(
+                    &d_z,
+                    &l[index - 1].output,
+                    l[index - 1].activation,
+                    self.lambda,
+                    self.learning_step,
+                    false,
+                    debug,
+                    &mut self.d_ws,
+                    &mut self.d_bs,
+                    &mut self.d_zs,
+                );
+            } else if index == 0 {
+                self.layers[index].backprop(
+                    &d_z,
+                    &input,
+                    false,
+                    self.lambda,
+                    self.learning_step,
+                    true,
+                    debug,
+                    &mut self.d_ws,
+                    &mut self.d_bs,
+                    &mut self.d_zs,
+                );
                 break;
             }
 
@@ -247,7 +223,7 @@ impl Model {
                     self.layers_debug = self.layers.clone();
                 }
 
-                self.update_params(&d_score, &batch_data, debug);
+                self.update_params(d_score, batch_data, debug);
 
                 if debug {
                     let mut tmp = network_history.expect("network_history should be initialized");

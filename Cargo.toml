@@ -12,7 +12,7 @@ rand = "0.8.5"
 criterion = "0.5" 
 
 [[bench]]
-name = "test_bench"
+name = "matrix_benches"
 harness = false
 
 [lib]

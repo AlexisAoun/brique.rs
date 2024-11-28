@@ -28,7 +28,7 @@ pub fn spiral_dataset_test() {
 
     let mut model = Model::init(layers, 0.001, 0.01);
 
-    model.train(&data, &labels, 50, 2, 500, false);
+    model.train(&data, &labels, 50, 2, 500, false, false);
 }
 
 // use crate::utils::*;

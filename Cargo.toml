@@ -15,6 +15,10 @@ criterion = "0.5"
 name = "matrix_benches"
 harness = false
 
+[[bench]]
+name = "model_benches"
+harness = false
+
 [lib]
 name = "brique"
 path = "src/lib.rs"

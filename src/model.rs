@@ -178,6 +178,7 @@ impl Model {
         epochs: u32,
         validation_dataset_size: usize,
         debug: bool,
+        silent_mode: bool, // if true will not print anything
     ) -> Option<Vec<Model>> {
         let mut network_history: Option<Vec<Model>> = None;
 
@@ -249,9 +250,10 @@ impl Model {
 
                 batch_number += 1;
 
-                if batch_number % 5 == 0 && !debug {
+                if batch_number % 5 == 0 && !debug && !silent_mode {
                     let score_validation: Matrix = self.predict(&validation_data);
-                    let loss_validation: f64 = self.compute_loss(&score_validation, &validation_label, debug);
+                    let loss_validation: f64 =
+                        self.compute_loss(&score_validation, &validation_label, debug);
                     let acc_validation: f64 = self.accuracy(&validation_data, &validation_label);
 
                     println!(
@@ -259,7 +261,6 @@ impl Model {
                         epoch, batch_number, loss_validation, acc_validation
                     );
                 }
-
             }
         }
 

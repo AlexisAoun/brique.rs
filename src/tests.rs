@@ -44,7 +44,7 @@ mod tests {
             data_loss: 0.0,
         };
 
-        let network_history = model.train(&test_data[0], &test_data[1], 6, 5, 0, true);
+        let network_history = model.train(&test_data[0], &test_data[1], 6, 5, 0, true, true);
 
         let models: Vec<Model> = network_history.unwrap();
 

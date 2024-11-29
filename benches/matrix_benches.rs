@@ -71,7 +71,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let rand_matrix1: Matrix = Matrix::init_rand(1, 10);
             let rand_matrix2: Matrix = Matrix::init_rand(1, 10);
-            black_box(&rand_matrix1).add_value_to_all_rows(black_box(&rand_matrix2))
+            black_box(&rand_matrix1).add_1d_matrix_to_all_rows(black_box(&rand_matrix2))
         })
     });
 
@@ -79,7 +79,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let rand_matrix1: Matrix = Matrix::init_rand(1, 100);
             let rand_matrix2: Matrix = Matrix::init_rand(1, 100);
-            black_box(&rand_matrix1).add_value_to_all_rows(black_box(&rand_matrix2))
+            black_box(&rand_matrix1).add_1d_matrix_to_all_rows(black_box(&rand_matrix2))
         })
     });
 
@@ -87,7 +87,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let rand_matrix1: Matrix = Matrix::init_rand(1, 1000);
             let rand_matrix2: Matrix = Matrix::init_rand(1, 1000);
-            black_box(&rand_matrix1).add_value_to_all_rows(black_box(&rand_matrix2))
+            black_box(&rand_matrix1).add_1d_matrix_to_all_rows(black_box(&rand_matrix2))
         })
     });
 

@@ -22,3 +22,4 @@ harness = false
 [lib]
 name = "brique"
 path = "src/lib.rs"
+bench = false

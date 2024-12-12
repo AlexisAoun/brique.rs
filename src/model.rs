@@ -52,23 +52,21 @@ impl Model {
         output
     }
     pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
-        let mut index: u32 = 0;
-        let mut tmp: Matrix = Matrix::init_zero(0, 0);
-        for layer in self.layers.iter_mut() {
+        for index in 0..self.layers.len() {
             if index == 0 {
-                tmp = layer.forward(input, false);
+                self.layers[0].forward(input, false);
             } else {
-                tmp = layer.forward(&tmp, false);
+                let (l, r) = self.layers.split_at_mut(index);
+                r[0].forward(&l[index - 1].output, false);
             }
 
             if debug {
-                self.itermediate_evaluation_results.push(tmp.clone());
+                self.itermediate_evaluation_results
+                    .push(self.layers[index].output.clone());
             }
-
-            index += 1;
         }
 
-        let output = softmax(&tmp);
+        let output = softmax(&self.layers[self.layers.len() - 1].output);
 
         if debug {
             self.softmax_output = output.clone();
@@ -151,8 +149,6 @@ impl Model {
     // before every epoch :
     //  - shuffle dataset (use the algo of rand crate)
     //  - generate batch from shuffled dataset
-    //  TODO i should really implement Matrix<T>
-    //  TODO refactor it looks like ass
     pub fn train(
         &mut self,
         data: &Matrix,
@@ -240,7 +236,7 @@ impl Model {
                 batch_number += 1;
 
                 if batch_number % 5 == 0 && !debug && !silent_mode {
-                    let score_validation: Matrix = self.predict(&validation_data);
+                    let score_validation: Matrix = self.evaluate(&validation_data, false);
                     let loss_validation: f64 =
                         self.compute_loss(&score_validation, &validation_label, debug);
                     let acc_validation: f64 = self.accuracy(&validation_data, &validation_label);
@@ -285,24 +281,6 @@ impl Model {
 
             output.set(index_max as f64, 0, r);
         }
-
-        output
-    }
-
-    pub fn predict(&mut self, input: &Matrix) -> Matrix {
-        let mut index: u32 = 0;
-        let mut tmp: Matrix = Matrix::init_zero(0, 0);
-        for layer in self.layers.iter_mut() {
-            if index == 0 {
-                tmp = layer.forward(input, true);
-            } else {
-                tmp = layer.forward(&tmp, true);
-            }
-
-            index += 1;
-        }
-
-        let output = softmax(&tmp);
 
         output
     }

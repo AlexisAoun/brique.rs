@@ -9,7 +9,7 @@ pub fn relu(input: f64) -> f64 {
 }
 
 pub fn softmax(input: &Matrix) -> Matrix {
-    let mut input_sub_max: Matrix = Matrix::init_zero(input.height, input.width);
+    let mut max_per_row: Vec<f64> = vec![];
 
     for r in 0..input.height {
         let max: f64 = *input
@@ -18,22 +18,29 @@ pub fn softmax(input: &Matrix) -> Matrix {
             .max_by(|a, b| a.total_cmp(b))
             .unwrap();
 
-        for c in 0..input.width {
-            let v = input.get(r, c) - max;
-            input_sub_max.set(v, r, c);
-        }
+        max_per_row.push(max);
     }
 
-    let input_exp: Matrix = input_sub_max.exp();
-    let mut output: Matrix = Matrix::init_zero(input.height, input.width);
+    let vec_output: Vec<f64> = (0..input.height * input.width)
+        .map(|i| (input.get_1d(i) - max_per_row[i / input.width]).exp())
+        .collect();
 
-    for r in 0..input.height {
-        let sum: f64 = input_exp.get_row(r).iter().sum();
-        for c in 0..input.width {
-            let v = input_exp.get(r, c) / sum;
-            output.set(v, r, c);
-        }
+    let mut output = Matrix::init(input.height, input.width, vec_output);
+
+    let mut sum_per_row: Vec<f64> = vec![];
+
+    for r in 0..output.height {
+        let sum: f64 = output.get_row(r).iter().sum();
+
+        sum_per_row.push(sum);
     }
+
+    output.data = output
+        .data
+        .iter()
+        .enumerate()
+        .map(|(i, v)| v / sum_per_row[i / output.width])
+        .collect();
 
     output
 }

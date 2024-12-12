@@ -2,7 +2,7 @@ use rand::prelude::*;
 
 #[derive(Clone)]
 pub struct Matrix {
-    data: Vec<f64>,
+    pub data: Vec<f64>,
     pub width: usize,
     pub height: usize,
     pub transposed: bool,

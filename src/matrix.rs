@@ -2,7 +2,7 @@ use rand::prelude::*;
 
 #[derive(Clone)]
 pub struct Matrix {
-    data: Vec<f64>,
+    pub data: Vec<f64>,
     pub width: usize,
     pub height: usize,
     pub transposed: bool,
@@ -279,6 +279,15 @@ impl Matrix {
         }
 
         self.height -= 1;
+    }
+
+    pub fn compute_d_relu_inplace(&mut self, z_minus_1: &Matrix) {
+        self.data = self
+            .data
+            .iter()
+            .enumerate()
+            .map(|(i, v)| if z_minus_1.data[i] <= 0.0 { 0.0 } else { *v })
+            .collect();
     }
 
     pub fn display(&self) {

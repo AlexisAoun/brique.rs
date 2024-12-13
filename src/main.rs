@@ -1,5 +1,6 @@
 use brique::benchmark::*;
+use brique::save_load::*;
 
 fn main() {
-    benchmark();
+    f64_to_u8();
 }

@@ -1,4 +1,4 @@
-use crate::{layers::Layer, matrix::Matrix};
+use crate::{layers::Layer, matrix::Matrix, model::Model};
 use core::panic;
 use std::{collections::HashMap, fs};
 
@@ -46,10 +46,10 @@ pub fn read_write() {
     };
 
     let layer_2 = Layer::init(7, 10, true);
+    let model = Model::init(vec![layer_1.clone(), layer_2.clone()], 0.1, 2.0);
 
     let mut byte_steam: Vec<u8> = vec![];
-    byte_steam.append(&mut layer_to_binary(&layer_1));
-    byte_steam.append(&mut layer_to_binary(&layer_2));
+    byte_steam.append(&mut model_to_binary(&model));
 
     let res_write = fs::write("test.brq", byte_steam);
 
@@ -60,16 +60,15 @@ pub fn read_write() {
     }
 
     let output_of_reading_file: Vec<u8> = fs::read("test.brq").unwrap();
-    let (layer_output1, offset) = binary_to_layer(&output_of_reading_file, 0);
-    let (layer_output2, _) = binary_to_layer(&output_of_reading_file, offset);
+    let model_output = binary_to_model(&output_of_reading_file, 0);
 
-    assert_eq!(layer_1.activation, layer_output1.activation);
+    assert_eq!(layer_1.activation, model_output.layers[0].activation);
     layer_1.weights_t.display();
-    layer_output1.weights_t.display();
+    model_output.layers[0].weights_t.display();
 
-    assert_eq!(layer_2.activation, layer_output2.activation);
     layer_2.weights_t.display();
-    layer_output2.weights_t.display();
+    model_output.layers[1].weights_t.display();
+    assert_eq!(layer_2.activation, model_output.layers[1].activation);
 }
 
 pub fn f64_array_to_binary(input: &Vec<f64>) -> Vec<u8> {
@@ -123,33 +122,33 @@ pub fn binary_to_matrix(byte_stream: &Vec<u8>, input_offset: usize) -> (Matrix, 
 
     assert!(
         offset < byte_stream.len(),
-        "Save binary reading : Unexpected EOF"
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
     );
     assert_eq!(
         byte_stream[offset..offset + 3],
         START_OF_OBJECT_MAGIC_NUMBER,
-        "Save binary reading : Binary start of object code not found, file may be corrupted"
+        "Save binary reading - while attempting to decode a matrix : Binary start of object code not found, file may be corrupted"
     );
     offset += 3;
     let id_lookup_table = LookupStructBinaryId::init();
 
     assert!(
         offset < byte_stream.len(),
-        "Save binary reading : Unexpected EOF"
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
     );
-    assert_eq!(byte_stream[offset], id_lookup_table.lookup("Matrix"), "Save binary reading : Binary id code does not match the lookup table for the Matrix entry, file may be corrupted");
+    assert_eq!(byte_stream[offset], id_lookup_table.lookup("Matrix"), "Save binary reading - while attempting to decode a matrix : Binary id code does not match the lookup table for the Matrix entry, file may be corrupted");
     offset += 1;
 
     assert!(
         offset < byte_stream.len(),
-        "Save binary reading : Unexpected EOF"
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
     );
     let transposed: bool = byte_stream[offset] != 0;
     offset += 1;
 
     assert!(
         offset + 8 < byte_stream.len(),
-        "Save binary reading : Unexpected EOF"
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
     );
     let height: usize =
         u64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap()) as usize;
@@ -157,30 +156,28 @@ pub fn binary_to_matrix(byte_stream: &Vec<u8>, input_offset: usize) -> (Matrix, 
 
     assert!(
         offset + 8 < byte_stream.len(),
-        "Save binary reading : Unexpected EOF"
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
     );
     let width: usize =
         u64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap()) as usize;
     offset += 8;
 
-    println!("offset : {}", offset);
-    println!("height : {}, width : {}", height, width);
     let data_size: usize = height * width * 8;
     assert!(
         offset + data_size <= byte_stream.len(),
-        "Save binary reading : Unexpected EOF"
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
     );
     if offset + data_size + 2 <= byte_stream.len() {
         assert_eq!(
             byte_stream[offset + data_size..offset + data_size + 3],
             START_OF_OBJECT_MAGIC_NUMBER,
-            "Save binary reading : Binary start of object code not found, file may be corrupted"
+            "Save binary reading - while attempting to decode a matrix : Binary start of object code not found, file may be corrupted"
         );
     } else {
         assert_eq!(
             offset + data_size,
             byte_stream.len(),
-            "Save binary reading : Unexpected EOF"
+            "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
         );
     }
 
@@ -254,4 +251,80 @@ pub fn binary_to_layer(byte_stream: &Vec<u8>, input_offset: usize) -> (Layer, us
     };
 
     (output_layer, offset)
+}
+
+// learning step f64
+// lambda f64
+// number of layers
+// layres Vec<Layer>
+pub fn model_to_binary(input_model: &Model) -> Vec<u8> {
+    let mut output: Vec<u8> = vec![];
+
+    let id_lookup_table = LookupStructBinaryId::init();
+
+    output.append(&mut START_OF_OBJECT_MAGIC_NUMBER.to_vec());
+    output.push(id_lookup_table.lookup("Model"));
+    output.append(&mut input_model.learning_step.to_be_bytes().to_vec());
+    output.append(&mut input_model.lambda.to_be_bytes().to_vec());
+    output.append(&mut (input_model.layers.len() as u64).to_be_bytes().to_vec());
+
+    input_model.layers.iter().for_each(|layer| output.append(&mut layer_to_binary(&layer)));
+    
+    output
+}
+
+pub fn binary_to_model(byte_stream: &Vec<u8>, input_offset: usize) -> Model {
+    let mut offset = input_offset;
+
+    assert!(
+        offset < byte_stream.len(),
+        "Save binary reading - while attempting to decode a model : Unexpected EOF"
+    );
+    assert_eq!(
+        byte_stream[offset..offset + 3],
+        START_OF_OBJECT_MAGIC_NUMBER,
+        "Save binary reading - while attempting to decode a model : Binary start of object code not found, file may be corrupted"
+    );
+    offset += 3;
+    let id_lookup_table = LookupStructBinaryId::init();
+
+    assert!(
+        offset < byte_stream.len(),
+        "Save binary reading - while attempting to decode a model : Unexpected EOF"
+    );
+    assert_eq!(byte_stream[offset], id_lookup_table.lookup("Model"), "Save binary reading - while attempting to decode a model : Binary id code does not match the lookup table for the Layer entry, file may be corrupted");
+    offset += 1;
+
+    assert!(
+        offset + 8 < byte_stream.len(),
+        "Save binary reading - while attempting to decode a model : Unexpected EOF"
+    );
+    let learning_step: f64 =
+        f64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap());
+    offset += 8;
+
+    assert!(
+        offset + 8 < byte_stream.len(),
+        "Save binary reading - while attempting to decode a model : Unexpected EOF"
+    );
+    let lambda: f64 =
+        f64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap());
+    offset += 8;
+
+    assert!(
+        offset + 8 < byte_stream.len(),
+        "Save binary reading - while attempting to decode a matrix : Unexpected EOF"
+    );
+    let number_of_layers: usize =
+        u64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap()) as usize;
+    offset += 8;
+
+    let mut layers: Vec<Layer> = vec![];
+    for _ in 0..number_of_layers {
+        let (layer, new_offset) = binary_to_layer(byte_stream, offset);
+        offset = new_offset;
+        layers.push(layer);
+    }
+
+    Model::init(layers, lambda, learning_step)
 }

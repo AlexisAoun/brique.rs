@@ -12,18 +12,18 @@ pub struct Model {
 
     // these elements are stored in the struct for debugging purposes
     // only if debug arg is true
-    pub layers_debug: Vec<Layer>,
-    pub input: Matrix,
-    pub input_label: Matrix,
-    pub itermediate_evaluation_results: Vec<Matrix>,
-    pub softmax_output: Matrix,
-    pub data_loss: f64,
-    pub reg_loss: f64,
-    pub loss: f64,
-    pub d_score: Matrix,
-    pub d_zs: Vec<Matrix>,
-    pub d_ws: Vec<Matrix>,
-    pub d_bs: Vec<Matrix>,
+    pub layers_debug: Option<Vec<Layer>>,
+    pub input: Option<Matrix>,
+    pub input_label: Option<Matrix>,
+    pub itermediate_evaluation_results: Option<Vec<Matrix>>,
+    pub softmax_output: Option<Matrix>,
+    pub data_loss: Option<f64>,
+    pub reg_loss: Option<f64>,
+    pub loss: Option<f64>,
+    pub d_score: Option<Matrix>,
+    pub d_zs: Option<Vec<Matrix>>,
+    pub d_ws: Option<Vec<Matrix>>,
+    pub d_bs: Option<Vec<Matrix>>,
 }
 
 // all the variables begining with d (like d_score) are the derivative
@@ -35,22 +35,23 @@ impl Model {
             layers,
             lambda,
             learning_step,
-            layers_debug: Vec::new(),
-            input: Matrix::init_zero(2, 2),
-            input_label: Matrix::init_zero(2, 2),
-            itermediate_evaluation_results: Vec::new(),
-            softmax_output: Matrix::init_zero(2, 2),
-            d_zs: Vec::new(),
-            d_ws: Vec::new(),
-            d_bs: Vec::new(),
-            d_score: Matrix::init_zero(2, 3),
-            loss: 0.0,
-            reg_loss: 0.0,
-            data_loss: 0.0,
+            layers_debug: None,
+            input: None,
+            input_label: None,
+            itermediate_evaluation_results: None,
+            softmax_output: None,
+            d_zs: None,
+            d_ws: None,
+            d_bs: None,
+            d_score: None,
+            loss: None,
+            reg_loss: None,
+            data_loss: None,
         };
 
         output
     }
+
     pub fn evaluate(&mut self, input: &Matrix, debug: bool) -> Matrix {
         for index in 0..self.layers.len() {
             if index == 0 {
@@ -61,7 +62,7 @@ impl Model {
             }
 
             if debug {
-                self.itermediate_evaluation_results
+                self.itermediate_evaluation_results.get_or_insert(Vec::new())
                     .push(self.layers[index].output.clone());
             }
         }
@@ -69,7 +70,7 @@ impl Model {
         let output = softmax(&self.layers[self.layers.len() - 1].output);
 
         if debug {
-            self.softmax_output = output.clone();
+            self.softmax_output = Some(output.clone());
         }
 
         output
@@ -78,8 +79,8 @@ impl Model {
     // implementing cross-entropy and L2 regulariztion
     pub fn compute_loss(&mut self, output: &Matrix, labels: &Matrix, debug: bool) -> f64 {
         if debug {
-            self.data_loss = cross_entropy(output, labels);
-            self.reg_loss = l2_reg(&self.layers, self.lambda);
+            self.data_loss = Some(cross_entropy(output, labels));
+            self.reg_loss = Some(l2_reg(&self.layers, self.lambda));
         }
 
         cross_entropy(output, labels) + l2_reg(&self.layers, self.lambda)
@@ -162,7 +163,12 @@ impl Model {
         let mut network_history: Option<Vec<Model>> = None;
 
         if debug {
-            network_history = Some(Vec::new());
+            // network_history = Some(Vec::new());
+            // self.layers_debug = Some(Vec::new());
+            // self.itermediate_evaluation_results = Some(Vec::new());
+            // self.d_zs = Some(Vec::new());
+            // self.d_ws = Some(Vec::new());
+            // self.d_bs = Some(Vec::new());
         }
 
         let mut index_table: Vec<u32>;
@@ -212,25 +218,21 @@ impl Model {
                 let d_score = Model::compute_d_score(&score, &batch_label);
 
                 if debug {
-                    self.d_score = d_score.clone();
-                    self.input = batch_data.clone();
-                    self.input_label = batch_label.clone();
-                    self.loss = loss;
-                    self.layers_debug = self.layers.clone();
+                    self.d_score = Some(d_score.clone());
+                    self.input = Some(batch_data.clone());
+                    self.input_label = Some(batch_label.clone());
+                    self.loss = Some(loss);
+                    self.layers_debug = Some(self.layers.clone());
                 }
 
                 self.update_params(d_score, batch_data, debug);
 
                 if debug {
-                    let mut tmp = network_history.expect("network_history should be initialized");
-                    tmp.push(self.clone());
-                    network_history = Some(tmp);
-
-                    //reinit bebug vars
-                    self.itermediate_evaluation_results = Vec::new();
-                    self.d_zs = Vec::new();
-                    self.d_ws = Vec::new();
-                    self.d_bs = Vec::new();
+                    network_history.get_or_insert(Vec::new()).push(self.clone());
+                    self.itermediate_evaluation_results = None;
+                    self.d_zs = None;
+                    self.d_bs = None;
+                    self.d_ws = None;
                 }
 
                 batch_number += 1;

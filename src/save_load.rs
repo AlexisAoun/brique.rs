@@ -268,8 +268,11 @@ pub fn model_to_binary(input_model: &Model) -> Vec<u8> {
     output.append(&mut input_model.lambda.to_be_bytes().to_vec());
     output.append(&mut (input_model.layers.len() as u64).to_be_bytes().to_vec());
 
-    input_model.layers.iter().for_each(|layer| output.append(&mut layer_to_binary(&layer)));
-    
+    input_model
+        .layers
+        .iter()
+        .for_each(|layer| output.append(&mut layer_to_binary(&layer)));
+
     output
 }
 
@@ -307,8 +310,7 @@ pub fn binary_to_model(byte_stream: &Vec<u8>, input_offset: usize) -> Model {
         offset + 8 < byte_stream.len(),
         "Save binary reading - while attempting to decode a model : Unexpected EOF"
     );
-    let lambda: f64 =
-        f64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap());
+    let lambda: f64 = f64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap());
     offset += 8;
 
     assert!(

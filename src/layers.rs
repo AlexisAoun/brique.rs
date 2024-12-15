@@ -70,9 +70,15 @@ impl Layer {
         let d_b: Matrix = d_z.sum_rows();
 
         if debug {
-            debug_array_d_outputs.get_or_insert_with(|| Vec::new()).push(d_z.clone());
-            debug_array_d_weights.get_or_insert_with(|| Vec::new()).push(d_w.clone());
-            debug_array_d_biaises.get_or_insert_with(|| Vec::new()).push(d_b.clone());
+            debug_array_d_outputs
+                .get_or_insert_with(|| Vec::new())
+                .push(d_z.clone());
+            debug_array_d_weights
+                .get_or_insert_with(|| Vec::new())
+                .push(d_w.clone());
+            debug_array_d_biaises
+                .get_or_insert_with(|| Vec::new())
+                .push(d_b.clone());
         }
 
         let mut new_d_z = d_z.dot(&self.weights_t.t());

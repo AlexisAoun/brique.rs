@@ -38,22 +38,27 @@ mod tests {
 
         for model in models {
             // weights and biases
-            model.layers_debug.unwrap().iter().enumerate().for_each(|(i, l)| {
-                assert!(
-                    l.weights_t
-                        .is_equal(&expected_params[(index * 21) + (i * 2)], precision),
-                    "Weights in iteration {}, layer {}, incorrect values",
-                    index + 1,
-                    i + 1
-                );
-                assert!(
-                    l.biases
-                        .is_equal(&expected_params[(index * 21) + (i * 2) + 1], precision),
-                    "Biases in iteration {}, layer {}, incorrect values",
-                    index + 1,
-                    i + 1
-                );
-            });
+            model
+                .layers_debug
+                .unwrap()
+                .iter()
+                .enumerate()
+                .for_each(|(i, l)| {
+                    assert!(
+                        l.weights_t
+                            .is_equal(&expected_params[(index * 21) + (i * 2)], precision),
+                        "Weights in iteration {}, layer {}, incorrect values",
+                        index + 1,
+                        i + 1
+                    );
+                    assert!(
+                        l.biases
+                            .is_equal(&expected_params[(index * 21) + (i * 2) + 1], precision),
+                        "Biases in iteration {}, layer {}, incorrect values",
+                        index + 1,
+                        i + 1
+                    );
+                });
 
             // intermediate layer results
             model
@@ -127,7 +132,15 @@ mod tests {
                     }
                 });
 
-            let loss_matrix = Matrix::init(1, 3, vec![model.data_loss.unwrap(), model.reg_loss.unwrap(), model.loss.unwrap()]);
+            let loss_matrix = Matrix::init(
+                1,
+                3,
+                vec![
+                    model.data_loss.unwrap(),
+                    model.reg_loss.unwrap(),
+                    model.loss.unwrap(),
+                ],
+            );
             loss_matrix.display();
             expected_params[((index + 1) * 21) - 1].display();
             assert!(

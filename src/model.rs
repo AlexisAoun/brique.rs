@@ -62,7 +62,8 @@ impl Model {
             }
 
             if debug {
-                self.itermediate_evaluation_results.get_or_insert(Vec::new())
+                self.itermediate_evaluation_results
+                    .get_or_insert(Vec::new())
                     .push(self.layers[index].output.clone());
             }
         }
@@ -161,15 +162,6 @@ impl Model {
         silent_mode: bool, // if true will not print anything
     ) -> Option<Vec<Model>> {
         let mut network_history: Option<Vec<Model>> = None;
-
-        if debug {
-            // network_history = Some(Vec::new());
-            // self.layers_debug = Some(Vec::new());
-            // self.itermediate_evaluation_results = Some(Vec::new());
-            // self.d_zs = Some(Vec::new());
-            // self.d_ws = Some(Vec::new());
-            // self.d_bs = Some(Vec::new());
-        }
 
         let mut index_table: Vec<u32>;
         let index_validation: Vec<u32>;

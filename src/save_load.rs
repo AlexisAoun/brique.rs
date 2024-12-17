@@ -61,9 +61,9 @@ impl fmt::Display for ModelManagementError {
     }
 }
 
-pub fn save_model(model: Model, file_path: String) -> Result<(), ModelManagementError> {
+pub fn save_model(model: &Model, file_path: String) -> Result<(), ModelManagementError> {
     let mut byte_stream: Vec<u8> = vec![];
-    byte_stream.append(&mut model_to_binary(&model));
+    byte_stream.append(&mut model_to_binary(model));
     byte_stream.splice(0..0, add_header(byte_stream.len() as u64));
 
     let res_write = fs::write(file_path + FILE_EXTENSION, byte_stream);
@@ -373,4 +373,70 @@ pub fn binary_to_model(
     }
 
     Ok(Model::init(layers, lambda, learning_step))
+}
+
+//unit test
+#[cfg(test)]
+mod tests {
+    use core::panic;
+    use std::fs;
+
+    use crate::{layers::Layer, model::Model, save_load::FILE_EXTENSION};
+
+    use super::{load_model, save_model};
+
+    #[test]
+    fn succesful_model_save_and_load() {
+        let layer1 = Layer::init(10, 100, true);
+        let layer2 = Layer::init(100, 200, true);
+        let layer3 = Layer::init(200, 200, true);
+        let layer4 = Layer::init(200, 3, false);
+
+        let lambda: f64 = 0.012;
+        let learning_step: f64 = 0.101;
+
+        let file_path: String = "test_model_save".to_string();
+        let model = Model::init(vec![layer1, layer2, layer3, layer4], lambda, learning_step);
+        save_model(&model, file_path.clone()).unwrap();
+
+        let loaded_model = match load_model(file_path.clone()) {
+            Ok(model) => model,
+            Err(e) => panic!("{}", e),
+        };
+
+        match fs::remove_file(file_path + FILE_EXTENSION) {
+            Ok(()) => (),
+            Err(e) => panic!("{}", e),
+        };
+
+        assert_eq!(
+            model.lambda, loaded_model.lambda,
+            "Models lambdas are not the same"
+        );
+        assert_eq!(
+            model.learning_step, loaded_model.learning_step,
+            "Models learning steps are not the same"
+        );
+        assert_eq!(
+            model.layers.len(),
+            loaded_model.layers.len(),
+            "Models do not have the same number of layers"
+        );
+        for i in 0..model.layers.len() {
+            assert!(
+                model.layers[i]
+                    .weights_t
+                    .is_equal(&loaded_model.layers[i].weights_t, 10),
+                "Layer {} weights are different in the two models",
+                i
+            );
+            assert!(
+                model.layers[i]
+                    .biases
+                    .is_equal(&loaded_model.layers[i].biases, 10),
+                "Layer {} biases are different in the two models",
+                i
+            );
+        }
+    }
 }

@@ -6,7 +6,7 @@ fn main() {
 
     let model = Model::init(vec![layer1.clone(), layer2.clone()], 0.1, 0.0065);
 
-    save_model(model, "model1".to_string()).unwrap();
+    save_model(&model, "model1".to_string()).unwrap();
 
     let model_retreived: Model = match load_model("model1".to_string()) {
         Ok(model) => model,

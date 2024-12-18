@@ -177,7 +177,7 @@ impl Matrix {
 
     // used for test
     pub fn is_equal(&self, m: &Matrix, precision: i32) -> bool {
-        if self.width != m.width || self.height != m.height {
+        if self.width != m.width || self.height != m.height || self.transposed != m.transposed {
             return false;
         } else {
             for i in 0..self.height * self.width {

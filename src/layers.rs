@@ -59,9 +59,9 @@ impl Layer {
         learning_step: f64,
         is_input_layer: bool,
         debug: bool,
-        debug_array_d_weights: &mut Vec<Matrix>,
-        debug_array_d_biaises: &mut Vec<Matrix>,
-        debug_array_d_outputs: &mut Vec<Matrix>,
+        debug_array_d_weights: &mut Option<Vec<Matrix>>,
+        debug_array_d_biaises: &mut Option<Vec<Matrix>>,
+        debug_array_d_outputs: &mut Option<Vec<Matrix>>,
     ) -> Matrix {
         let d_w: Matrix = z_minus_1
             .t()
@@ -70,9 +70,15 @@ impl Layer {
         let d_b: Matrix = d_z.sum_rows();
 
         if debug {
-            debug_array_d_outputs.push(d_z.clone());
-            debug_array_d_weights.push(d_w.clone());
-            debug_array_d_biaises.push(d_b.clone());
+            debug_array_d_outputs
+                .get_or_insert_with(|| Vec::new())
+                .push(d_z.clone());
+            debug_array_d_weights
+                .get_or_insert_with(|| Vec::new())
+                .push(d_w.clone());
+            debug_array_d_biaises
+                .get_or_insert_with(|| Vec::new())
+                .push(d_b.clone());
         }
 
         let mut new_d_z = d_z.dot(&self.weights_t.t());

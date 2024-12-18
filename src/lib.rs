@@ -5,5 +5,6 @@ pub mod loss;
 pub mod matrix;
 pub mod model;
 pub mod parse_test_csv;
+pub mod save_load;
 pub mod spiral;
 pub mod utils;

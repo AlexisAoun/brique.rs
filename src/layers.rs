@@ -1,5 +1,6 @@
 use crate::activation::*;
 use crate::matrix::*;
+use crate::optimizer::Optimizer;
 
 // note : we have directly the transpose of weights (hence the _t) to optimize computation
 #[derive(Clone)]
@@ -56,7 +57,7 @@ impl Layer {
         z_minus_1: &Matrix,
         previous_layer_activation: bool,
         lambda: f64,
-        learning_step: f64,
+        optimizer: &Optimizer,
         is_input_layer: bool,
         debug: bool,
         debug_array_d_weights: &mut Option<Vec<Matrix>>,
@@ -88,8 +89,8 @@ impl Layer {
             }
         }
 
-        self.update_weigths(&d_w, learning_step);
-        self.update_biases(&d_b, learning_step);
+        self.update_weigths(&d_w, optimizer);
+        self.update_biases(&d_b, optimizer);
 
         new_d_z
     }
@@ -105,15 +106,39 @@ impl Layer {
         output
     }
 
-    pub fn update_weigths(&mut self, input: &Matrix, learning_step: f64) {
-        self.weights_t = self
-            .weights_t
-            .add_two_matrices(&input.mult(learning_step * -1.0));
+    pub fn update_weigths(&mut self, input: &Matrix, optimizer: &Optimizer) {
+        match optimizer {
+            Optimizer::SGD { learning_step } => {
+                self.weights_t = self
+                    .weights_t
+                    .add_two_matrices(&input.mult(*learning_step * -1.0));
+            }
+
+            Optimizer::Adam {
+                learning_step: _,
+                beta1: _,
+                beta2: _,
+            } => {
+                unimplemented!()
+            }
+        }
     }
 
-    pub fn update_biases(&mut self, input: &Matrix, learning_step: f64) {
-        self.biases = self
-            .biases
-            .add_two_matrices(&input.mult(learning_step * -1.0));
+    pub fn update_biases(&mut self, input: &Matrix, optimizer: &Optimizer) {
+        match optimizer {
+            Optimizer::SGD { learning_step } => {
+                self.biases = self
+                    .biases
+                    .add_two_matrices(&input.mult(*learning_step * -1.0));
+            }
+
+            Optimizer::Adam {
+                learning_step: _,
+                beta1: _,
+                beta2: _,
+            } => {
+                unimplemented!()
+            }
+        }
     }
 }

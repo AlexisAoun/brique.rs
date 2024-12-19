@@ -1,4 +1,4 @@
-use crate::{layers::Layer, matrix::Matrix, model::Model};
+use crate::{layers::Layer, matrix::Matrix, model::Model, optimizer::Optimizer};
 use core::panic;
 use std::{collections::HashMap, fmt, fs};
 
@@ -320,7 +320,6 @@ pub fn model_to_binary(input_model: &Model) -> Vec<u8> {
 
     output.append(&mut START_OF_OBJECT_MAGIC_NUMBER.to_vec());
     output.push(id_lookup_table.lookup("Model"));
-    output.append(&mut input_model.learning_step.to_be_bytes().to_vec());
     output.append(&mut input_model.lambda.to_be_bytes().to_vec());
     output.append(&mut (input_model.layers.len() as u64).to_be_bytes().to_vec());
 
@@ -350,10 +349,6 @@ pub fn binary_to_model(
     }
     offset += 1;
 
-    let learning_step: f64 =
-        f64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap());
-    offset += 8;
-
     let lambda: f64 = f64::from_be_bytes(byte_stream[offset..offset + 8].try_into().unwrap());
     offset += 8;
 
@@ -372,7 +367,13 @@ pub fn binary_to_model(
         layers.push(layer);
     }
 
-    Ok(Model::init(layers, lambda, learning_step))
+    Ok(Model::init(
+        layers,
+        Optimizer::SGD {
+            learning_step: 0.01,
+        },
+        lambda,
+    ))
 }
 
 //unit test
@@ -381,7 +382,7 @@ mod tests {
     use core::panic;
     use std::fs;
 
-    use crate::{layers::Layer, model::Model, save_load::FILE_EXTENSION};
+    use crate::{layers::Layer, model::Model, optimizer::Optimizer, save_load::FILE_EXTENSION};
 
     use super::{load_model, save_model};
 
@@ -393,10 +394,15 @@ mod tests {
         let layer4 = Layer::init(200, 3, false);
 
         let lambda: f64 = 0.012;
-        let learning_step: f64 = 0.101;
 
         let file_path: String = "test_model_save".to_string();
-        let model = Model::init(vec![layer1, layer2, layer3, layer4], lambda, learning_step);
+        let model = Model::init(
+            vec![layer1, layer2, layer3, layer4],
+            Optimizer::SGD {
+                learning_step: 0.01,
+            },
+            lambda,
+        );
         save_model(&model, file_path.clone()).unwrap();
 
         let loaded_model = match load_model(file_path.clone()) {
@@ -412,10 +418,6 @@ mod tests {
         assert_eq!(
             model.lambda, loaded_model.lambda,
             "Models lambdas are not the same"
-        );
-        assert_eq!(
-            model.learning_step, loaded_model.learning_step,
-            "Models learning steps are not the same"
         );
         assert_eq!(
             model.layers.len(),

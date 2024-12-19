@@ -2,13 +2,14 @@ use crate::activation::*;
 use crate::layers::*;
 use crate::loss::*;
 use crate::matrix::*;
+use crate::optimizer::*;
 use crate::utils::*;
 
 #[derive(Clone)]
 pub struct Model {
     pub layers: Vec<Layer>,
     pub lambda: f64,
-    pub learning_step: f64,
+    pub optimizer: Optimizer,
 
     // these elements are stored in the struct for debugging purposes
     // only if debug arg is true
@@ -30,11 +31,11 @@ pub struct Model {
 // of the loss function compared to said variable, so d_score is d Loss/ d Score
 // doing so for ease of read
 impl Model {
-    pub fn init(layers: Vec<Layer>, lambda: f64, learning_step: f64) -> Model {
+    pub fn init(layers: Vec<Layer>, optimizer: Optimizer, lambda: f64) -> Model {
         let output = Model {
             layers,
             lambda,
-            learning_step,
+            optimizer,
             layers_debug: None,
             input: None,
             input_label: None,
@@ -120,7 +121,7 @@ impl Model {
                     &l[index - 1].output,
                     l[index - 1].activation,
                     self.lambda,
-                    self.learning_step,
+                    &self.optimizer,
                     false,
                     debug,
                     &mut self.d_ws,
@@ -133,7 +134,7 @@ impl Model {
                     &input,
                     false,
                     self.lambda,
-                    self.learning_step,
+                    &self.optimizer,
                     true,
                     debug,
                     &mut self.d_ws,

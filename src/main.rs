@@ -1,10 +1,13 @@
-use brique::{layers::Layer, model::Model, save_load::*};
+use brique::{layers::Layer, model::Model, optimizer::Optimizer, save_load::*};
 
 fn main() {
     let layer1 = Layer::init(5, 10, true);
     let layer2 = Layer::init(10, 8, false);
 
-    let model = Model::init(vec![layer1.clone(), layer2.clone()], 0.1, 0.0065);
+    let optimizer = Optimizer::SGD {
+        learning_step: 0.01,
+    };
+    let model = Model::init(vec![layer1.clone(), layer2.clone()], optimizer, 0.065);
 
     save_model(&model, "model1".to_string()).unwrap();
 

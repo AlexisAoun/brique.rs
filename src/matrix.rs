@@ -1,5 +1,10 @@
 use rand::prelude::*;
 
+// enum DataType {
+//     F32(Vec<f32>),
+//     F64(Vec<f32>),
+// }
+
 #[derive(Clone)]
 pub struct Matrix {
     pub data: Vec<f64>,

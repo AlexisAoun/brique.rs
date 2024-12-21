@@ -295,7 +295,11 @@ impl Layer {
                 self.weights_t.width,
             ))
             .div_inplace(1.0 - (beta2.powi(iteration)));
-        //println!("vel final, iteration {} {}",iteration, self.velocity_weight.as_ref().expect("").get(1,1));
+        println!(
+            "vel final, iteration {} {}",
+            iteration,
+            self.velocity_weight.as_ref().expect("").get(1, 1)
+        );
 
         match &self.velocity_weight {
             Some(velocity) => velocity.clone(),

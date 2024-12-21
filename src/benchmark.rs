@@ -24,18 +24,17 @@ pub fn spiral_dataset_test() {
     let layer3 = Layer::init(30, 3, false);
 
     let layers = vec![layer1, layer2, layer3];
-
-    let optimizer = Optimizer::Adam {
-        learning_step: 0.001,
+    let adam = Optimizer::Adam {
+        learning_step: 0.0001,
         beta1: 0.9,
-        beta2: 0.9,
+        beta2: 0.999,
     };
     let sgd = Optimizer::SGD {
-        learning_step: 0.01,
+        learning_step: 0.001,
     };
-    let mut model = Model::init(layers, optimizer, 0.1);
+    let mut model = Model::init(layers, sgd, 0.001);
 
-    model.train(&data, &labels, 50, 2, 500, false, false);
+    model.train(&data, &labels, 50, 5, 500, false, false);
 }
 
 // use crate::utils::*;

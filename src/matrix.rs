@@ -40,9 +40,7 @@ impl Matrix {
     }
 
     pub fn init_rand(height: usize, width: usize) -> Matrix {
-        let rand_vec: Vec<f64> = (0..height * width)
-            .map(|_| random::<f64>() * 0.01)
-            .collect();
+        let rand_vec: Vec<f64> = (0..height * width).map(|_| random::<f64>()).collect();
 
         Matrix {
             data: rand_vec,

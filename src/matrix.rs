@@ -204,6 +204,20 @@ impl Matrix {
         self.data = self.data.iter().map(|x| x.exp()).collect();
     }
 
+    pub fn sqrt_inplace(&mut self) {
+        self.data = self
+            .data
+            .iter()
+            .map(|x| {
+                assert!(
+                    *x >= 0.0,
+                    "Trying to square root a negative value in a matrix error"
+                );
+                x.sqrt()
+            })
+            .collect();
+    }
+
     pub fn exp(&self) -> Matrix {
         let mut output = self.clone();
         output.exp_inplace();
@@ -236,6 +250,10 @@ impl Matrix {
         output
     }
 
+    pub fn add_inplace(&mut self, a: f64) {
+        self.data = self.data.iter().map(|x| x + a).collect();
+    }
+
     pub fn div_inplace(&mut self, a: f64) {
         assert_ne!(a, 0.0, "Divide by 0 matrix error");
         self.data = self.data.iter().map(|x| x / a).collect();
@@ -257,7 +275,6 @@ impl Matrix {
         output
     }
 
-    // zip iterators the two arrays
     pub fn add_two_matrices(&self, m: &Matrix) -> Matrix {
         assert!(
             self.height == m.height && self.width == m.width,
@@ -273,6 +290,37 @@ impl Matrix {
             height: self.height,
             transposed: false,
         }
+    }
+
+    pub fn add_two_matrices_inplace(&mut self, m: &Matrix) {
+        assert!(
+            self.height == m.height && self.width == m.width,
+            "The two matrices should have the same dimensions"
+        );
+
+        self.data = self
+            .data
+            .iter()
+            .enumerate()
+            .map(|(i, val)| val + m.data[i])
+            .collect();
+    }
+
+    pub fn div_two_matrices_inplace(&mut self, m: &Matrix) {
+        assert!(
+            self.height == m.height && self.width == m.width,
+            "The two matrices should have the same dimensions"
+        );
+
+        self.data = self
+            .data
+            .iter()
+            .enumerate()
+            .map(|(i, val)| {
+                assert_ne!(m.data[i], 0.0, "Divide by 0 error in matrix to matrix div");
+                val / m.data[i]
+            })
+            .collect();
     }
 
     pub fn pop_last_row(&mut self) {
@@ -510,6 +558,43 @@ mod tests {
         assert!(test_data[0]
             .add_1d_matrix_to_all_rows(&test_data[1])
             .is_equal(&test_data[2], 10));
+    }
+
+    #[test]
+    fn div_two_matrices_test() {
+        let test_data = parse_test_csv("tests/test_data/div_two_matrices_test.csv".to_string());
+        let mut m1 = test_data[0].clone();
+
+        m1.div_two_matrices_inplace(&test_data[1]);
+        assert!(m1.is_equal(&test_data[2], 10));
+    }
+
+    #[test]
+    #[should_panic]
+    fn unvalid_div_by_0_div_two_matrices_test() {
+        let test_data = parse_test_csv("tests/test_data/div_two_matrices_test.csv".to_string());
+        let mut m1 = test_data[0].clone();
+        let mut m2 = test_data[1].clone();
+        m2.set(0.0, 1, 1);
+        m1.div_two_matrices_inplace(&m2);
+    }
+
+    #[test]
+    fn sqrt_test() {
+        let test_data = parse_test_csv("tests/test_data/sqrt_test.csv".to_string());
+        let mut m1 = test_data[0].clone();
+
+        m1.sqrt_inplace();
+        assert!(m1.is_equal(&test_data[1], 10));
+    }
+
+    #[test]
+    #[should_panic]
+    fn unvalid_sqrt_negavtive_value() {
+        let test_data = parse_test_csv("tests/test_data/div_two_matrices_test.csv".to_string());
+        let mut m1 = test_data[0].clone();
+        m1.set(-1.0, 1, 1);
+        m1.sqrt_inplace();
     }
 
     #[test]

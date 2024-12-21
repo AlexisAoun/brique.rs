@@ -299,12 +299,7 @@ pub fn binary_to_layer(
         Err(e) => return Err(e),
     };
 
-    let output_layer = Layer {
-        weights_t,
-        biases,
-        activation,
-        output: Matrix::init_zero(0, 0),
-    };
+    let output_layer = Layer::init_with_data(weights_t, biases, activation);
 
     Ok((output_layer, offset))
 }

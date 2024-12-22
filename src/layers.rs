@@ -12,10 +12,10 @@ pub struct Layer {
     pub output: Matrix,
 
     // for adam optimizer
-    pub momentum_weight: Option<Matrix>,
-    pub momentum_biase: Option<Matrix>,
-    pub velocity_weight: Option<Matrix>,
-    pub velocity_biase: Option<Matrix>,
+    pub first_moment_weight: Option<Matrix>,
+    pub first_moment_biase: Option<Matrix>,
+    pub second_moment_weight: Option<Matrix>,
+    pub second_moment_biase: Option<Matrix>,
 }
 
 impl Layer {
@@ -25,10 +25,10 @@ impl Layer {
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
             output: Matrix::init_zero(0, 0),
-            momentum_weight: None,
-            momentum_biase: None,
-            velocity_weight: None,
-            velocity_biase: None,
+            first_moment_weight: None,
+            first_moment_biase: None,
+            second_moment_weight: None,
+            second_moment_biase: None,
         }
     }
 
@@ -38,10 +38,10 @@ impl Layer {
             biases,
             activation,
             output: Matrix::init_zero(0, 0),
-            momentum_weight: None,
-            momentum_biase: None,
-            velocity_weight: None,
-            velocity_biase: None,
+            first_moment_weight: None,
+            first_moment_biase: None,
+            second_moment_weight: None,
+            second_moment_biase: None,
         }
     }
 
@@ -52,10 +52,10 @@ impl Layer {
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
             activation,
             output: Matrix::init_zero(0, 0),
-            momentum_weight: None,
-            momentum_biase: None,
-            velocity_weight: None,
-            velocity_biase: None,
+            first_moment_weight: None,
+            first_moment_biase: None,
+            second_moment_weight: None,
+            second_moment_biase: None,
         }
     }
 
@@ -148,19 +148,19 @@ impl Layer {
                 beta1,
                 beta2,
             } => {
-                let mut corrected_momentum: Matrix =
-                    self.compute_corrected_momentum_weights(&mut input, *beta1, iteration);
-                let mut corrected_velocity: Matrix =
-                    self.compute_corrected_velocity_weights(&mut input, *beta2, iteration);
+                let mut corrected_first_moment: Matrix =
+                    self.compute_corrected_first_moment_weights(&mut input, *beta1, iteration);
+                let mut corrected_second_moment: Matrix =
+                    self.compute_corrected_second_moment_weights(&mut input, *beta2, iteration);
 
-                // W(t+1) = W(t) - learning_step * (momentum / (Sqrt(Velocity) + epsilon))
-                corrected_velocity.sqrt_inplace();
-                corrected_velocity.add_inplace(EPSILON);
-                corrected_momentum.div_two_matrices_inplace(&corrected_velocity);
+                // W(t+1) = W(t) - learning_step * (first_moment / (Sqrt(Velocity) + epsilon))
+                corrected_second_moment.sqrt_inplace();
+                corrected_second_moment.add_inplace(EPSILON);
+                corrected_first_moment.div_two_matrices_inplace(&corrected_second_moment);
 
                 self.weights_t = self
                     .weights_t
-                    .add_two_matrices(&corrected_momentum.mult(*learning_step * -1.0));
+                    .add_two_matrices(&corrected_first_moment.mult(*learning_step * -1.0));
             }
         }
     }
@@ -178,158 +178,118 @@ impl Layer {
                 beta1,
                 beta2,
             } => {
-                let mut corrected_momentum: Matrix =
-                    self.compute_corrected_momentum_biases(&mut input, *beta1, iteration);
-                let mut corrected_velocity: Matrix =
-                    self.compute_corrected_velocity_biases(&mut input, *beta2, iteration);
+                let mut corrected_first_moment: Matrix =
+                    self.compute_corrected_first_moment_biases(&mut input, *beta1, iteration);
+                let mut corrected_second_moment: Matrix =
+                    self.compute_corrected_second_moment_biases(&mut input, *beta2, iteration);
 
-                // B(t+1) = B(t) - learning_step * (momentum / (Sqrt(Velocity) + epsilon))
-                corrected_velocity.sqrt_inplace();
-                corrected_velocity.add_inplace(EPSILON);
-                corrected_momentum.div_two_matrices_inplace(&corrected_velocity);
+                // B(t+1) = B(t) - learning_step * (first_moment / (Sqrt(second_moment) + epsilon))
+                corrected_second_moment.sqrt_inplace();
+                corrected_second_moment.add_inplace(EPSILON);
+                corrected_first_moment.div_two_matrices_inplace(&corrected_second_moment);
 
                 self.biases = self
                     .biases
-                    .add_two_matrices(&corrected_momentum.mult(*learning_step * -1.0));
+                    .add_two_matrices(&corrected_first_moment.mult(*learning_step * -1.0));
             }
         }
     }
 
-    fn compute_corrected_momentum_weights(
+    fn compute_corrected_first_moment_weights(
         &mut self,
         input: &mut Matrix,
         beta1: f64,
         iteration: i32,
     ) -> Matrix {
-        // momentum (t+1) = momentum(t) * beta1 + gradient(t+1) * (1 - beta1)
+        // first_moment (t+1) = momentum(t) * beta1 + gradient(t+1) * (1 - beta1)
         input.mult_inplace(1.0 - beta1);
-        self.momentum_weight
+        self.first_moment_weight
             .get_or_insert(Matrix::init_zero(
                 self.weights_t.height,
                 self.weights_t.width,
             ))
             .mult_inplace(beta1);
-        self.momentum_weight
+        self.first_moment_weight
             .get_or_insert(Matrix::init_zero(
                 self.weights_t.height,
                 self.weights_t.width,
             ))
             .add_two_matrices_inplace(input);
 
-        // biase correction
-        self.momentum_weight
-            .get_or_insert(Matrix::init_zero(
-                self.weights_t.height,
-                self.weights_t.width,
-            ))
-            .div_inplace(1.0 - (beta1.powi(iteration)));
-
-        match &self.momentum_weight {
-            Some(momentum) => momentum.clone(),
-            None => panic!("Weight momentum should be initalized at this point"),
+        match &self.first_moment_weight {
+            Some(first_moment) => first_moment.div(1.0 - (beta1.powi(iteration))),
+            None => panic!("Weight first_moment should be initalized at this point"),
         }
     }
 
-    fn compute_corrected_momentum_biases(
+    fn compute_corrected_first_moment_biases(
         &mut self,
         input: &mut Matrix,
         beta1: f64,
         iteration: i32,
     ) -> Matrix {
-        // momentum (t+1) = momentum(t) * beta1 + gradient(t+1) * (1 - beta1)
+        // first_moment (t+1) = momentum(t) * beta1 + gradient(t+1) * (1 - beta1)
         input.mult_inplace(1.0 - beta1);
-        self.momentum_biase
+        self.first_moment_biase
             .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
             .mult_inplace(beta1);
-        self.momentum_biase
+        self.first_moment_biase
             .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
             .add_two_matrices_inplace(input);
 
-        // biase correction
-        self.momentum_biase
-            .get_or_insert(Matrix::init_zero(self.biases.height, self.weights_t.width))
-            .div_inplace(1.0 - (beta1.powi(iteration)));
-
-        match &self.momentum_biase {
-            Some(momentum) => momentum.clone(),
-            None => panic!("Biase momentum should be initalized at this point"),
+        match &self.first_moment_biase {
+            Some(first_moment) => first_moment.div(1.0 - (beta1.powi(iteration))),
+            None => panic!("Biase first_moment should be initalized at this point"),
         }
     }
 
-    fn compute_corrected_velocity_weights(
+    fn compute_corrected_second_moment_weights(
         &mut self,
         input: &mut Matrix,
         beta2: f64,
         iteration: i32,
     ) -> Matrix {
-        // momentum (t+1) = momentum(t) * beta1 + gradient(t+1) * (1 - beta1)
+
+        // second_moment (t+1) = second_momentu(t) * beta2 + gradient(t+1)² * (1 - beta1)
         input.pow_inplace(2);
-        println!("input 1 {}", input.get(1, 1));
         input.mult_inplace(1.0 - beta2);
-        println!("input 2 {}", input.get(1, 1));
-        self.velocity_weight
+        self.second_moment_weight
             .get_or_insert(Matrix::init_zero(
                 self.weights_t.height,
                 self.weights_t.width,
             ))
             .mult_inplace(beta2);
-        println!(
-            "vel 1 : {}",
-            self.velocity_weight.as_ref().expect("").get(1, 1)
-        );
-        self.velocity_weight
+        self.second_moment_weight
             .get_or_insert(Matrix::init_zero(
                 self.weights_t.height,
                 self.weights_t.width,
             ))
             .add_two_matrices_inplace(input);
 
-        println!(
-            "vel 2 {}",
-            self.velocity_weight.as_ref().expect("").get(1, 1)
-        );
-        // biase correction
-        self.velocity_weight
-            .get_or_insert(Matrix::init_zero(
-                self.weights_t.height,
-                self.weights_t.width,
-            ))
-            .div_inplace(1.0 - (beta2.powi(iteration)));
-        println!(
-            "vel final, iteration {} {}",
-            iteration,
-            self.velocity_weight.as_ref().expect("").get(1, 1)
-        );
-
-        match &self.velocity_weight {
-            Some(velocity) => velocity.clone(),
+        match &self.second_moment_weight {
+            Some(second_moment) => second_moment.div(1.0 - (beta2.powi(iteration))),
             None => panic!("Weight velocity should be initalized at this point"),
         }
     }
 
-    fn compute_corrected_velocity_biases(
+    fn compute_corrected_second_moment_biases (
         &mut self,
         input: &mut Matrix,
         beta2: f64,
         iteration: i32,
     ) -> Matrix {
-        // momentum (t+1) = momentum(t) * beta1 + gradient(t+1) * (1 - beta1)
+        // second_moment (t+1) = second_momentu(t) * beta2 + gradient(t+1)² * (1 - beta1)
         input.pow_inplace(2);
         input.mult_inplace(1.0 - beta2);
-        self.velocity_biase
+        self.second_moment_biase
             .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
             .mult_inplace(beta2);
-        self.velocity_biase
+        self.second_moment_biase
             .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
             .add_two_matrices_inplace(input);
 
-        // biase correction
-        self.velocity_biase
-            .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
-            .div_inplace(1.0 - (beta2.powi(iteration)));
-
-        match &self.velocity_biase {
-            Some(velocity) => velocity.clone(),
+        match &self.second_moment_biase {
+            Some(second_moment) => second_moment.div(1.0 - (beta2.powi(iteration))),
             None => panic!("Biase velocity should be initalized at this point"),
         }
     }

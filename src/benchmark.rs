@@ -25,14 +25,14 @@ pub fn spiral_dataset_test() {
 
     let layers = vec![layer1, layer2, layer3];
     let adam = Optimizer::Adam {
-        learning_step: 0.0001,
+        learning_step: 0.001,
         beta1: 0.9,
         beta2: 0.999,
     };
     let sgd = Optimizer::SGD {
         learning_step: 0.001,
     };
-    let mut model = Model::init(layers, sgd, 0.001);
+    let mut model = Model::init(layers, adam, 0.001);
 
     model.train(&data, &labels, 50, 5, 500, false, false);
 }

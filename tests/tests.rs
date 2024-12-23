@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use brique::{layers::Layer, matrix::*, model::Model, parse_test_csv::parse_test_csv};
+    use brique::{
+        layers::Layer, matrix::*, model::Model, optimizer::Optimizer,
+        parse_test_csv::parse_test_csv,
+    };
 
     #[test]
     fn end_to_end_model_test() {
@@ -28,7 +31,8 @@ mod tests {
         let layer2 = Layer::init_test(3, true, input_weights[1].clone());
         let layer3 = Layer::init_test(3, false, input_weights[2].clone());
 
-        let mut model = Model::init(vec![layer1, layer2, layer3], 0.001, 0.1);
+        let optimizer = Optimizer::SGD { learning_step: 0.1 };
+        let mut model = Model::init(vec![layer1, layer2, layer3], optimizer, 0.001);
         let network_history = model.train(&test_data[0], &test_data[1], 6, 5, 0, true, true);
 
         let models: Vec<Model> = network_history.unwrap();

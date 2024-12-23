@@ -2,13 +2,14 @@ use crate::activation::*;
 use crate::layers::*;
 use crate::loss::*;
 use crate::matrix::*;
+use crate::optimizer::*;
 use crate::utils::*;
 
 #[derive(Clone)]
 pub struct Model {
     pub layers: Vec<Layer>,
     pub lambda: f64,
-    pub learning_step: f64,
+    pub optimizer: Optimizer,
 
     // these elements are stored in the struct for debugging purposes
     // only if debug arg is true
@@ -30,11 +31,11 @@ pub struct Model {
 // of the loss function compared to said variable, so d_score is d Loss/ d Score
 // doing so for ease of read
 impl Model {
-    pub fn init(layers: Vec<Layer>, lambda: f64, learning_step: f64) -> Model {
+    pub fn init(layers: Vec<Layer>, optimizer: Optimizer, lambda: f64) -> Model {
         let output = Model {
             layers,
             lambda,
-            learning_step,
+            optimizer,
             layers_debug: None,
             input: None,
             input_label: None,
@@ -108,7 +109,7 @@ impl Model {
         output
     }
 
-    pub fn update_params(&mut self, d_score: Matrix, input: Matrix, debug: bool) {
+    pub fn update_params(&mut self, d_score: Matrix, input: Matrix, iteration: i32, debug: bool) {
         let mut index: usize = self.layers.len() - 1;
         let mut d_z: Matrix = d_score;
 
@@ -120,7 +121,8 @@ impl Model {
                     &l[index - 1].output,
                     l[index - 1].activation,
                     self.lambda,
-                    self.learning_step,
+                    &self.optimizer,
+                    iteration,
                     false,
                     debug,
                     &mut self.d_ws,
@@ -133,7 +135,8 @@ impl Model {
                     &input,
                     false,
                     self.lambda,
-                    self.learning_step,
+                    &self.optimizer,
+                    iteration,
                     true,
                     debug,
                     &mut self.d_ws,
@@ -188,10 +191,11 @@ impl Model {
             index_table = (0..data.height as u32).collect();
         }
 
+        let mut iteration: i32 = 1;
         for epoch in 0..epochs {
             let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
 
-            let mut batch_number = 0;
+            let mut batch_number: u32 = 0;
 
             for batch_row in 0..index_matrix.height {
                 let batch_indexes: Vec<f64> = index_matrix.get_row(batch_row);
@@ -217,7 +221,7 @@ impl Model {
                     self.layers_debug = Some(self.layers.clone());
                 }
 
-                self.update_params(d_score, batch_data, debug);
+                self.update_params(d_score, batch_data, iteration, debug);
 
                 if debug {
                     network_history.get_or_insert(Vec::new()).push(self.clone());
@@ -228,6 +232,7 @@ impl Model {
                 }
 
                 batch_number += 1;
+                iteration += 1;
 
                 if batch_number % 5 == 0 && !debug && !silent_mode {
                     let score_validation: Matrix = self.evaluate(&validation_data, false);

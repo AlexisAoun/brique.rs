@@ -1,5 +1,6 @@
 use crate::layers::*;
 use crate::model::*;
+use crate::optimizer::Optimizer;
 use crate::spiral::*;
 use std::time::Instant;
 
@@ -18,15 +19,22 @@ pub fn spiral_dataset_test() {
 
     let (data, labels) = generate_spiral_dataset(3000, 3);
 
-    let layer1 = Layer::init(2, 1000, true);
-    let layer2 = Layer::init(1000, 1000, true);
-    let layer3 = Layer::init(1000, 3, false);
+    let layer1 = Layer::init(2, 30, true);
+    let layer2 = Layer::init(30, 30, true);
+    let layer3 = Layer::init(30, 3, false);
 
     let layers = vec![layer1, layer2, layer3];
+    let adam = Optimizer::Adam {
+        learning_step: 0.001,
+        beta1: 0.9,
+        beta2: 0.999,
+    };
+    let sgd = Optimizer::SGD {
+        learning_step: 0.001,
+    };
+    let mut model = Model::init(layers, adam, 0.001);
 
-    let mut model = Model::init(layers, 0.01, 0.01);
-
-    model.train(&data, &labels, 50, 2, 500, false, false);
+    model.train(&data, &labels, 50, 5, 500, false, false);
 }
 
 // use crate::utils::*;

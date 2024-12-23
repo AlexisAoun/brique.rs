@@ -3,7 +3,9 @@ use crate::matrix::*;
 use crate::optimizer::Optimizer;
 
 const EPSILON: f64 = 10E-8;
-// note : we have directly the transpose of weights (hence the _t) to optimize computation
+// note : we have directly the transpose of weights (hence the _t)
+// height -> number of inputs
+// width -> number of neurons in the layer
 #[derive(Clone)]
 pub struct Layer {
     pub weights_t: Matrix,
@@ -135,7 +137,7 @@ impl Layer {
         output
     }
 
-    pub fn update_weigths(&mut self, mut input: Matrix, optimizer: &Optimizer, iteration: i32) {
+    pub fn update_weigths(&mut self, input: Matrix, optimizer: &Optimizer, iteration: i32) {
         match optimizer {
             Optimizer::SGD { learning_step } => {
                 self.weights_t = self
@@ -149,11 +151,11 @@ impl Layer {
                 beta2,
             } => {
                 let mut corrected_first_moment: Matrix =
-                    self.compute_corrected_first_moment_weights(&mut input, *beta1, iteration);
+                    self.compute_corrected_first_moment_weights(input.clone(), *beta1, iteration);
                 let mut corrected_second_moment: Matrix =
-                    self.compute_corrected_second_moment_weights(&mut input, *beta2, iteration);
+                    self.compute_corrected_second_moment_weights(input, *beta2, iteration);
 
-                // W(t+1) = W(t) - learning_step * (first_moment / (Sqrt(Velocity) + epsilon))
+                // W(t+1) = W(t) - learning_step * (first_moment / (Sqrt(second_moment) + epsilon))
                 corrected_second_moment.sqrt_inplace();
                 corrected_second_moment.add_inplace(EPSILON);
                 corrected_first_moment.div_two_matrices_inplace(&corrected_second_moment);
@@ -165,7 +167,7 @@ impl Layer {
         }
     }
 
-    pub fn update_biases(&mut self, mut input: Matrix, optimizer: &Optimizer, iteration: i32) {
+    pub fn update_biases(&mut self, input: Matrix, optimizer: &Optimizer, iteration: i32) {
         match optimizer {
             Optimizer::SGD { learning_step } => {
                 self.biases = self
@@ -179,9 +181,9 @@ impl Layer {
                 beta2,
             } => {
                 let mut corrected_first_moment: Matrix =
-                    self.compute_corrected_first_moment_biases(&mut input, *beta1, iteration);
+                    self.compute_corrected_first_moment_biases(input.clone(), *beta1, iteration);
                 let mut corrected_second_moment: Matrix =
-                    self.compute_corrected_second_moment_biases(&mut input, *beta2, iteration);
+                    self.compute_corrected_second_moment_biases(input, *beta2, iteration);
 
                 // B(t+1) = B(t) - learning_step * (first_moment / (Sqrt(second_moment) + epsilon))
                 corrected_second_moment.sqrt_inplace();
@@ -197,7 +199,7 @@ impl Layer {
 
     fn compute_corrected_first_moment_weights(
         &mut self,
-        input: &mut Matrix,
+        mut input: Matrix,
         beta1: f64,
         iteration: i32,
     ) -> Matrix {
@@ -214,7 +216,7 @@ impl Layer {
                 self.weights_t.height,
                 self.weights_t.width,
             ))
-            .add_two_matrices_inplace(input);
+            .add_two_matrices_inplace(&input);
 
         match &self.first_moment_weight {
             Some(first_moment) => first_moment.div(1.0 - (beta1.powi(iteration))),
@@ -224,7 +226,7 @@ impl Layer {
 
     fn compute_corrected_first_moment_biases(
         &mut self,
-        input: &mut Matrix,
+        mut input: Matrix,
         beta1: f64,
         iteration: i32,
     ) -> Matrix {
@@ -235,7 +237,7 @@ impl Layer {
             .mult_inplace(beta1);
         self.first_moment_biase
             .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
-            .add_two_matrices_inplace(input);
+            .add_two_matrices_inplace(&input);
 
         match &self.first_moment_biase {
             Some(first_moment) => first_moment.div(1.0 - (beta1.powi(iteration))),
@@ -245,11 +247,10 @@ impl Layer {
 
     fn compute_corrected_second_moment_weights(
         &mut self,
-        input: &mut Matrix,
+        mut input: Matrix,
         beta2: f64,
         iteration: i32,
     ) -> Matrix {
-
         // second_moment (t+1) = second_momentu(t) * beta2 + gradient(t+1)² * (1 - beta1)
         input.pow_inplace(2);
         input.mult_inplace(1.0 - beta2);
@@ -264,7 +265,7 @@ impl Layer {
                 self.weights_t.height,
                 self.weights_t.width,
             ))
-            .add_two_matrices_inplace(input);
+            .add_two_matrices_inplace(&input);
 
         match &self.second_moment_weight {
             Some(second_moment) => second_moment.div(1.0 - (beta2.powi(iteration))),
@@ -272,9 +273,9 @@ impl Layer {
         }
     }
 
-    fn compute_corrected_second_moment_biases (
+    fn compute_corrected_second_moment_biases(
         &mut self,
-        input: &mut Matrix,
+        mut input: Matrix,
         beta2: f64,
         iteration: i32,
     ) -> Matrix {
@@ -286,7 +287,7 @@ impl Layer {
             .mult_inplace(beta2);
         self.second_moment_biase
             .get_or_insert(Matrix::init_zero(self.biases.height, self.biases.width))
-            .add_two_matrices_inplace(input);
+            .add_two_matrices_inplace(&input);
 
         match &self.second_moment_biase {
             Some(second_moment) => second_moment.div(1.0 - (beta2.powi(iteration))),
@@ -296,3 +297,39 @@ impl Layer {
 }
 
 //unit test adam optimizer
+#[cfg(test)]
+mod tests {
+    use crate::{optimizer::Optimizer, parse_test_csv::parse_test_csv};
+
+    use super::Layer;
+
+    #[test]
+    fn test_adam_optimizer() {
+        let test_data = parse_test_csv("tests/test_data/adam_test.csv".to_string());
+        let mut layer = Layer::init_with_data(test_data[0].clone(), test_data[1].clone(), true);
+
+        layer.first_moment_weight = Some(test_data[4].clone());
+        layer.first_moment_biase = Some(test_data[5].clone());
+        layer.second_moment_weight = Some(test_data[6].clone());
+        layer.second_moment_biase = Some(test_data[7].clone());
+
+        let adam = Optimizer::Adam {
+            learning_step: 0.001,
+            beta1: 0.9,
+            beta2: 0.999,
+        };
+        let iteration = 7;
+
+        layer.update_weigths(test_data[2].clone(), &adam, iteration);
+        layer.update_biases(test_data[3].clone(), &adam, iteration);
+
+        assert!(
+            layer.weights_t.is_equal(&test_data[16], 10),
+            "Adam test : the updated weights don't have the expected values"
+        );
+        assert!(
+            layer.biases.is_equal(&test_data[17], 10),
+            "Adam test : the updated biases don't have the expected values"
+        );
+    }
+}

@@ -209,11 +209,10 @@ impl Model {
                 }
 
                 let score: Matrix = self.evaluate(&batch_data, debug);
-                let loss: f64 = self.compute_loss(&score, &batch_label, debug);
-
-                let d_score = Model::compute_d_score(&score, &batch_label);
+                let d_score: Matrix = Model::compute_d_score(&score, &batch_label);
 
                 if debug {
+                    let loss: f64 = self.compute_loss(&score, &batch_label, debug);
                     self.d_score = Some(d_score.clone());
                     self.input = Some(batch_data.clone());
                     self.input_label = Some(batch_label.clone());
@@ -234,7 +233,7 @@ impl Model {
                 batch_number += 1;
                 iteration += 1;
 
-                if batch_number % 5 == 0 && !debug && !silent_mode {
+                if batch_number % 10 == 0 && !debug && !silent_mode {
                     let score_validation: Matrix = self.evaluate(&validation_data, false);
                     let loss_validation: f64 =
                         self.compute_loss(&score_validation, &validation_label, debug);
@@ -268,19 +267,35 @@ impl Model {
     pub fn evaluation_output(score: &Matrix) -> Matrix {
         let mut output: Matrix = Matrix::init_zero(1, score.height);
         for r in 0..score.height {
-            let mut index_max: u32 = 0;
-            let mut last_max: f64 = 0.0;
-            //iter ?
-            for c in 0..score.width {
-                if score.get(r, c) > last_max {
-                    last_max = score.get(r, c);
-                    index_max = c as u32;
-                }
-            }
+            let one_input:Vec<f64> = score.get_row(r);
+            let index_max: usize = one_input.iter()
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                .map(|(index, _)| index).unwrap();
 
             output.set(index_max as f64, 0, r);
         }
 
         output
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Matrix, Model};
+
+    fn get_test_matrix() -> Matrix {
+        let matrix = Matrix::init(2, 3, vec![0.1, 1.3, 0.5, 12.0, 1.01, -1000.0]);
+
+        matrix
+    }
+
+
+    #[test]
+    fn evaluation_output_test() {
+        let expected_output = Matrix::init(1,2, vec![1.0,0.0]);
+        let output = Model::evaluation_output(&get_test_matrix());
+            
+        assert!(expected_output.is_equal(&output, 10));
     }
 }

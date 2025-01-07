@@ -267,11 +267,13 @@ impl Model {
     pub fn evaluation_output(score: &Matrix) -> Matrix {
         let mut output: Matrix = Matrix::init_zero(1, score.height);
         for r in 0..score.height {
-            let one_input:Vec<f64> = score.get_row(r);
-            let index_max: usize = one_input.iter()
+            let one_input: Vec<f64> = score.get_row(r);
+            let index_max: usize = one_input
+                .iter()
                 .enumerate()
                 .max_by(|(_, a), (_, b)| a.total_cmp(b))
-                .map(|(index, _)| index).unwrap();
+                .map(|(index, _)| index)
+                .unwrap();
 
             output.set(index_max as f64, 0, r);
         }
@@ -290,12 +292,11 @@ mod tests {
         matrix
     }
 
-
     #[test]
     fn evaluation_output_test() {
-        let expected_output = Matrix::init(1,2, vec![1.0,0.0]);
+        let expected_output = Matrix::init(1, 2, vec![1.0, 0.0]);
         let output = Model::evaluation_output(&get_test_matrix());
-            
+
         assert!(expected_output.is_equal(&output, 10));
     }
 }

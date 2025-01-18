@@ -2,6 +2,7 @@
 use brique::layers::*;
 use brique::matrix::*;
 use brique::model::*;
+use brique::optimizer::Optimizer;
 use brique::spiral::*;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -17,7 +18,10 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
             let layers = vec![layer1, layer2, layer3];
 
-            let mut model = Model::init(layers, 0.001, 0.01);
+            let sgd = Optimizer::SGD {
+                learning_step: 0.001,
+            };
+            let mut model = Model::init(layers, sgd, 0.01);
 
             model.train(&data, &labels, 50, 2, 200, false, true);
         })

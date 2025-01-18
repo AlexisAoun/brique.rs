@@ -193,16 +193,16 @@ impl Model {
 
         let mut iteration: i32 = 1;
         for epoch in 0..epochs {
-            let index_matrix: Matrix = generate_batch_index(&index_table, batch_size);
+            let index_matrix: Vec<Vec<f64>> = generate_batch_index(&index_table, batch_size);
 
             let mut batch_number: u32 = 0;
 
-            for batch_row in 0..index_matrix.height {
-                let batch_indexes: Vec<f64> = index_matrix.get_row(batch_row);
-                let mut batch_data: Matrix = Matrix::init_zero(batch_size as usize, data.width);
-                let mut batch_label: Matrix = Matrix::init_zero(1, batch_size as usize);
+            for batch_row in 0..index_matrix.len() {
+                let batch_indexes: Vec<f64> = index_matrix[batch_row].clone();
+                let mut batch_data: Matrix = Matrix::init_zero(batch_indexes.len(), data.width);
+                let mut batch_label: Matrix = Matrix::init_zero(1, batch_indexes.len());
 
-                for i in 0..batch_size as usize {
+                for i in 0..batch_indexes.len() as usize {
                     let index: usize = batch_indexes[i] as usize;
                     batch_data.set_row(&data.get_row(index), i);
                     batch_label.set(labels.get(0, index), 0, i);
@@ -233,7 +233,7 @@ impl Model {
                 batch_number += 1;
                 iteration += 1;
 
-                if batch_number % 10 == 0 && !debug && !silent_mode {
+                if batch_number % 50 == 0 && !debug && !silent_mode {
                     let score_validation: Matrix = self.evaluate(&validation_data, false);
                     let loss_validation: f64 =
                         self.compute_loss(&score_validation, &validation_label, debug);

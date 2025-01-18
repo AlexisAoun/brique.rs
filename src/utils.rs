@@ -12,7 +12,7 @@ pub fn generate_vec_rand_unique(size: u32) -> Vec<u32> {
 
 // not the optimal way to return Matrix with f64s. can be optimised with matrix that accepts
 // generic type
-pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Matrix {
+pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Vec<Vec<f64>> {
     assert!(
         index_table.len() as u32 >= batch_size,
         "Batch size cannot be bigger than training dataset size"
@@ -23,22 +23,18 @@ pub fn generate_batch_index(index_table: &Vec<u32>, batch_size: u32) -> Matrix {
     if index_table.len() % (batch_size as usize) != 0 {
         number_of_batches += 1;
     }
-    let mut output: Matrix = Matrix::init_zero(number_of_batches, batch_size as usize);
 
-    // i shouldnt code at 2am. bad things happen
-    // wtf is this
-    // TODO rewrite this
-    'outer: for i in 0..number_of_batches {
+    let mut output: Vec<Vec<f64>> = vec![];
+
+    for i in 0..number_of_batches {
+        let mut tmp: Vec<f64> = vec![];
         for j in 0..batch_size as usize {
             let index: usize = (i * batch_size as usize) + j;
             if index < index_table.len() {
-                output.set(index_table[index] as f64, i, j);
-            } else {
-                // just drop if uneven cant be bothered
-                output.pop_last_row();
-                break 'outer;
+                tmp.push(index_table[index] as f64);
             }
         }
+        output.push(tmp);
     }
 
     output

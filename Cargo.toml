@@ -11,6 +11,9 @@ rand = "0.8.5"
 [dev-dependencies]
 criterion = "0.5" 
 
+[[example]]
+name = "mnist"
+
 [[bench]]
 name = "matrix_benches"
 harness = false

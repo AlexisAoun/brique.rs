@@ -161,6 +161,7 @@ impl Model {
         batch_size: u32,
         epochs: u32,
         validation_dataset_size: usize,
+        print_frequency: usize,
         debug: bool,
         silent_mode: bool, // if true will not print anything
     ) -> Option<Vec<Model>> {
@@ -195,8 +196,6 @@ impl Model {
         for epoch in 0..epochs {
             let index_matrix: Vec<Vec<f64>> = generate_batch_index(&index_table, batch_size);
 
-            let mut batch_number: u32 = 0;
-
             for batch_row in 0..index_matrix.len() {
                 let batch_indexes: Vec<f64> = index_matrix[batch_row].clone();
                 let mut batch_data: Matrix = Matrix::init_zero(batch_indexes.len(), data.width);
@@ -230,18 +229,27 @@ impl Model {
                     self.d_ws = None;
                 }
 
-                batch_number += 1;
                 iteration += 1;
 
-                if batch_number % 50 == 0 && !debug && !silent_mode {
+                if ((batch_row + 1) % print_frequency == 0 || batch_row + 1 == index_matrix.len())
+                    && !debug
+                    && !silent_mode
+                {
                     let score_validation: Matrix = self.evaluate(&validation_data, false);
                     let loss_validation: f64 =
                         self.compute_loss(&score_validation, &validation_label, debug);
-                    let acc_validation: f64 = self.accuracy(&validation_data, &validation_label);
+                    let loss_training: f64 = self.compute_loss(&score, &batch_label, debug);
+                    let acc_training: f64 = self.accuracy(&score, &batch_label);
+                    let acc_validation: f64 = self.accuracy(&score_validation, &validation_label);
 
                     println!(
-                        "Iteration : {}, Batch_number : {}, Loss : {}, Acc : {}",
-                        epoch, batch_number, loss_validation, acc_validation
+                        "Epoch : {}, Batch : {}, Loss : {}, Acc {}, Val_loss : {}, Val_acc : {}",
+                        epoch,
+                        batch_row + 1,
+                        loss_training,
+                        acc_training,
+                        loss_validation,
+                        acc_validation
                     );
                 }
             }
@@ -250,8 +258,7 @@ impl Model {
         network_history
     }
 
-    pub fn accuracy(&mut self, data: &Matrix, labels: &Matrix) -> f64 {
-        let score = self.evaluate(data, false);
+    pub fn accuracy(&mut self, score: &Matrix, labels: &Matrix) -> f64 {
         let answer = Self::evaluation_output(&score);
 
         let mut sum = 0;

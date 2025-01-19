@@ -23,7 +23,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             };
             let mut model = Model::init(layers, sgd, 0.01);
 
-            model.train(&data, &labels, 50, 2, 200, false, true);
+            model.train(&data, &labels, 50, 2, 200, 10, false, true);
         })
     });
 }

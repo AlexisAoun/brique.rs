@@ -33,7 +33,7 @@ mod tests {
 
         let optimizer = Optimizer::SGD { learning_step: 0.1 };
         let mut model = Model::init(vec![layer1, layer2, layer3], optimizer, 0.001);
-        let network_history = model.train(&test_data[0], &test_data[1], 6, 5, 0, true, true);
+        let network_history = model.train(&test_data[0], &test_data[1], 6, 5, 0, 10, true, true);
 
         let models: Vec<Model> = network_history.unwrap();
 

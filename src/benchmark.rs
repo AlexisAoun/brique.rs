@@ -37,7 +37,7 @@ pub fn spiral_dataset_test() {
     };
     let mut model = Model::init(layers, adam, 0.001);
 
-    model.train(&data, &labels, 50, 2, 500, false, false);
+    model.train(&data, &labels, 50, 2, 500, 10, false, false);
 
     save_load::save_model(&model, "spiral_model".to_string()).unwrap();
 }

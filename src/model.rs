@@ -244,7 +244,7 @@ impl Model {
 
                     println!(
                         "Epoch : {}, Batch : {}, Loss : {}, Acc {}, Val_loss : {}, Val_acc : {}",
-                        epoch,
+                        epoch + 1,
                         batch_row + 1,
                         loss_training,
                         acc_training,

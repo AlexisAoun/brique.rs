@@ -2,7 +2,6 @@ use crate::layers::*;
 use crate::model::*;
 use crate::optimizer::Optimizer;
 use crate::save_load;
-use crate::save_load::*;
 use crate::spiral::*;
 use std::time::Instant;
 
@@ -32,9 +31,7 @@ pub fn spiral_dataset_test() {
         beta1: 0.9,
         beta2: 0.999,
     };
-    let sgd = Optimizer::SGD {
-        learning_step: 0.001,
-    };
+
     let mut model = Model::init(layers, adam, 0.001);
 
     model.train(&data, &labels, 50, 2, 500, 10, false, false);
@@ -58,9 +55,7 @@ pub fn load_trained_spiral_model_and_test() {
         beta1: 0.9,
         beta2: 0.999,
     };
-    let sgd = Optimizer::SGD {
-        learning_step: 0.001,
-    };
+
     let mut model = Model::init(layers, adam, 0.001);
     let acc_not_trained: f64 = model.accuracy(&test_data, &test_labels);
 

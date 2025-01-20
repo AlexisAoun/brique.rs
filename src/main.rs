@@ -1,4 +1,4 @@
-use brique::{benchmark::benchmark, utils::generate_batch_index};
+use brique::utils::generate_batch_index;
 
 fn main() {
     //benchmark();

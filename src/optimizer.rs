@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Optimizer {
     SGD {
         learning_step: f64,

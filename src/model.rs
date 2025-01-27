@@ -1,8 +1,10 @@
 use crate::activation::*;
+use crate::checkpoint::Checkpoint;
 use crate::layers::*;
 use crate::loss::*;
 use crate::matrix::*;
 use crate::optimizer::*;
+use crate::save_load::save_model;
 use crate::utils::*;
 
 #[derive(Clone)]
@@ -193,6 +195,11 @@ impl Model {
         }
 
         let mut iteration: i32 = 1;
+        let mut best_val_acc: Option<f64> = None;
+        let mut best_val_loss: Option<f64> = None;
+        let checkpoint: Option<Checkpoint> = Some(Checkpoint::ValAcc {
+            save_path: "god_have_mercy".to_string(),
+        });
         for epoch in 0..epochs {
             let index_matrix: Vec<Vec<f64>> = generate_batch_index(&index_table, batch_size);
 
@@ -229,7 +236,43 @@ impl Model {
                     self.d_ws = None;
                 }
 
-                iteration += 1;
+                match &checkpoint {
+                    Some(checkpoint) => match checkpoint {
+                        Checkpoint::ValAcc { save_path } => {
+                            let score_validation: Matrix = self.evaluate(&validation_data, false);
+                            let acc_validation: f64 =
+                                self.accuracy(&score_validation, &validation_label);
+                            match best_val_acc {
+                                Some(prev) => {
+                                    if acc_validation > prev {
+                                        save_model(self, save_path.to_string()).unwrap();
+                                        best_val_acc = Some(acc_validation);
+                                    }
+                                }
+                                None => {
+                                    best_val_acc = Some(acc_validation);
+                                }
+                            }
+                        }
+                        Checkpoint::ValLoss { save_path } => {
+                            let score_validation: Matrix = self.evaluate(&validation_data, false);
+                            let loss_validation: f64 =
+                                self.compute_loss(&score_validation, &validation_label, debug);
+                            match best_val_loss {
+                                Some(prev) => {
+                                    if loss_validation < prev {
+                                        save_model(self, save_path.to_string()).unwrap();
+                                        best_val_loss = Some(loss_validation);
+                                    }
+                                }
+                                None => {
+                                    best_val_loss = Some(loss_validation);
+                                }
+                            }
+                        }
+                    },
+                    None => (),
+                }
 
                 if ((batch_row + 1) % print_frequency == 0 || batch_row + 1 == index_matrix.len())
                     && !debug
@@ -252,9 +295,20 @@ impl Model {
                         acc_validation
                     );
                 }
+
+                iteration += 1;
             }
         }
 
+        match &checkpoint {
+            Some(checkpoint) => {
+                match checkpoint {
+                    Checkpoint::ValAcc { save_path } => println!("The best model has been saved at the path : {} it's validation accuracy is : {}", save_path, best_val_acc.unwrap_or(0.0)),
+                    Checkpoint::ValLoss { save_path } => println!("The best model has been saved at the path : {} it's validation loss is : {}", save_path, best_val_loss.unwrap_or(0.0))
+                }
+            },
+            None => ()
+        }
         network_history
     }
 

@@ -1,5 +1,6 @@
 pub mod activation;
 pub mod benchmark;
+pub mod checkpoint;
 pub mod layers;
 pub mod loss;
 pub mod matrix;

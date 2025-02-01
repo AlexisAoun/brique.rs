@@ -1,12 +1,14 @@
+use brique::checkpoint::Checkpoint;
 use brique::layers::*;
 use brique::matrix::*;
 use brique::model::*;
+use brique::model_builder::ModelBuilder;
 use brique::optimizer::Optimizer;
 use brique::save_load::*;
 use brique::utils::*;
 
 fn main() {
-    training();
+    testing();
 }
 
 pub fn testing() {
@@ -20,17 +22,8 @@ pub fn testing() {
     println!("w {}", images.width);
 
     println!("loading pre-trained model...");
-    let mut model: Model = load_model("mnist_model_128x128_third_try".to_string()).unwrap();
+    let mut model: Model = load_model("mnist_128x128_rq".to_string()).unwrap();
 
-    // println!("model layers : {}", model.layers.len());
-    // println!("model layers1: {}", model.layers[0].weights_t.height);
-    // println!("model layers1: {}", model.layers[0].weights_t.width);
-    // println!("model layers2: {}", model.layers[1].weights_t.height);
-    // println!("model layers2: {}", model.layers[1].weights_t.width);
-    // println!("model layers3: {}", model.layers[2].weights_t.height);
-    // println!("model layers3: {}", model.layers[2].weights_t.width);
-    //
-    // println!("model optimizer: {:?}", model.optimizer);
     println!("evaluating...");
     let score = model.evaluate(&images, false);
     let acc = model.accuracy(&score, &labels);
@@ -48,23 +41,20 @@ pub fn training() {
     println!("h {}", images.height);
     println!("w {}", images.width);
 
-    //_print_a_number(labels, images, 159);
-    //
-
-    let layer1 = Layer::init(28 * 28, 128, true);
-    let layer2 = Layer::init(128, 128, true);
-    let layer3 = Layer::init(128, 128, true);
-    let layer4 = Layer::init(128, 10, false);
-
-    let optimizer = Optimizer::Adam {
-        learning_step: 0.001,
-        beta1: 0.9,
-        beta2: 0.999,
-    };
-
-    let mut model = Model::init(vec![layer1, layer2, layer3, layer4], optimizer, 0.005);
-
-    model.train(&images, &labels, 128, 50, 2000, 100, false, false);
+    ModelBuilder::new()
+        .add_layer(Layer::init(28 * 28, 128, true))
+        .add_layer(Layer::init(128, 128, true))
+        .add_layer(Layer::init(128, 10, false))
+        .optimizer(Optimizer::Adam {
+            learning_step: 0.007,
+            beta1: 0.9,
+            beta2: 0.999,
+        })
+        .l2_reg(0.001)
+        .checkpoint(Checkpoint::ValAcc {
+            save_path: "mnist_model".to_string(),
+        })
+        .build_and_train(&images, &labels, 128, 75, 2000);
 }
 
 fn _print_a_number(labels: Matrix, images: Matrix, v: usize) {

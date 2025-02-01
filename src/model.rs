@@ -163,6 +163,7 @@ impl Model {
         batch_size: u32,
         epochs: u32,
         validation_dataset_size: usize,
+        checkpoint: Option<Checkpoint>,
         print_frequency: usize,
         debug: bool,
         silent_mode: bool, // if true will not print anything
@@ -197,9 +198,6 @@ impl Model {
         let mut iteration: i32 = 1;
         let mut best_val_acc: Option<f64> = None;
         let mut best_val_loss: Option<f64> = None;
-        let checkpoint: Option<Checkpoint> = Some(Checkpoint::ValAcc {
-            save_path: "god_have_mercy".to_string(),
-        });
         for epoch in 0..epochs {
             let index_matrix: Vec<Vec<f64>> = generate_batch_index(&index_table, batch_size);
 
@@ -300,15 +298,18 @@ impl Model {
             }
         }
 
-        match &checkpoint {
-            Some(checkpoint) => {
-                match checkpoint {
-                    Checkpoint::ValAcc { save_path } => println!("The best model has been saved at the path : {} it's validation accuracy is : {}", save_path, best_val_acc.unwrap_or(0.0)),
-                    Checkpoint::ValLoss { save_path } => println!("The best model has been saved at the path : {} it's validation loss is : {}", save_path, best_val_loss.unwrap_or(0.0))
-                }
-            },
-            None => ()
+        if !silent_mode {
+            match &checkpoint {
+                Some(checkpoint) => {
+                    match checkpoint {
+                        Checkpoint::ValAcc { save_path } => println!("The best model has been saved at the path : {} it's validation accuracy is : {}", save_path, best_val_acc.unwrap_or(0.0)),
+                        Checkpoint::ValLoss { save_path } => println!("The best model has been saved at the path : {} it's validation loss is : {}", save_path, best_val_loss.unwrap_or(0.0))
+                    }
+                },
+                None => ()
+            }
         }
+
         network_history
     }
 

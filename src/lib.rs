@@ -5,6 +5,7 @@ pub mod layers;
 pub mod loss;
 pub mod matrix;
 pub mod model;
+pub mod model_builder;
 pub mod optimizer;
 pub mod parse_test_csv;
 pub mod save_load;

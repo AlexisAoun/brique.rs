@@ -1,4 +1,5 @@
-use rand::prelude::*;
+use rand::rng;
+use rand_distr::{Distribution, Normal};
 
 // enum DataType {
 //     F32(Vec<f32>),
@@ -39,13 +40,20 @@ impl Matrix {
         }
     }
 
-    pub fn init_rand(height: usize, width: usize) -> Matrix {
-        let rand_vec: Vec<f64> = (0..height * width).map(|_| random::<f64>()).collect();
+    pub fn init_rand(fan_in: usize, fan_out: usize) -> Matrix {
+        let std_dev = (2.0 / fan_in as f64).sqrt(); 
+        let normal = Normal::new(0.0, std_dev).unwrap();
+        let mut rng = rng();
+
+        normal.sample(&mut rand::rng());
+        let rand_vec = (0..fan_in * fan_out)
+            .map(|_| normal.sample(&mut rng))
+            .collect();
 
         Matrix {
             data: rand_vec,
-            width,
-            height,
+            width: fan_out,
+            height: fan_in,
             transposed: false,
         }
     }

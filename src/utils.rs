@@ -3,7 +3,7 @@ use rand::seq::SliceRandom;
 use std::fs::read;
 
 pub fn generate_vec_rand_unique(size: u32) -> Vec<u32> {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut output: Vec<u32> = (0..size).collect();
 
     output.shuffle(&mut rng);

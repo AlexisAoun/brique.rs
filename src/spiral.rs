@@ -1,5 +1,5 @@
 use crate::matrix::Matrix;
-use rand::prelude::*;
+use rand::{rng, Rng};
 
 pub fn generate_spiral_dataset(number_of_points: u32, number_of_classes: u32) -> (Matrix, Matrix) {
     let height: usize = (number_of_points * number_of_classes) as usize;
@@ -42,7 +42,8 @@ pub fn linspace(start: f64, stop: f64, number: u32) -> Vec<f64> {
 fn add_rand_to_vec(input_vec: &Vec<f64>) -> Vec<f64> {
     let mut output: Vec<f64> = Vec::new();
     for index in 0..input_vec.len() {
-        let mut r: f64 = random();
+        let mut rng = rng();
+        let mut r: f64 = rng.random::<f64>();
         r *= 0.2;
         output.push(input_vec[index] + r);
     }

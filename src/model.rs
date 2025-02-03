@@ -81,13 +81,16 @@ impl Model {
     }
 
     // implementing cross-entropy and L2 regulariztion
-    pub fn compute_loss(&mut self, output: &Matrix, labels: &Matrix, debug: bool) -> f64 {
+    pub fn compute_loss(&mut self, output: &Matrix, labels: &Matrix, debug: bool) -> (f64, f64) {
         if debug {
             self.data_loss = Some(cross_entropy(output, labels));
             self.reg_loss = Some(l2_reg(&self.layers, self.lambda));
         }
 
-        cross_entropy(output, labels) + l2_reg(&self.layers, self.lambda)
+        (
+            cross_entropy(output, labels),
+            l2_reg(&self.layers, self.lambda),
+        )
     }
 
     pub fn compute_d_score(score: &Matrix, labels: &Matrix) -> Matrix {
@@ -216,11 +219,12 @@ impl Model {
                 let d_score: Matrix = Model::compute_d_score(&score, &batch_label);
 
                 if debug {
-                    let loss: f64 = self.compute_loss(&score, &batch_label, debug);
+                    let (loss, l2_reg_penalty): (f64, f64) =
+                        self.compute_loss(&score, &batch_label, debug);
                     self.d_score = Some(d_score.clone());
                     self.input = Some(batch_data.clone());
                     self.input_label = Some(batch_label.clone());
-                    self.loss = Some(loss);
+                    self.loss = Some(loss + l2_reg_penalty);
                     self.layers_debug = Some(self.layers.clone());
                 }
 
@@ -254,7 +258,7 @@ impl Model {
                         }
                         Checkpoint::ValLoss { save_path } => {
                             let score_validation: Matrix = self.evaluate(&validation_data, false);
-                            let loss_validation: f64 =
+                            let (loss_validation, _): (f64, f64) =
                                 self.compute_loss(&score_validation, &validation_label, debug);
                             match best_val_loss {
                                 Some(prev) => {
@@ -277,17 +281,19 @@ impl Model {
                     && !silent_mode
                 {
                     let score_validation: Matrix = self.evaluate(&validation_data, false);
-                    let loss_validation: f64 =
+                    let (loss_validation, _): (f64, f64) =
                         self.compute_loss(&score_validation, &validation_label, debug);
-                    let loss_training: f64 = self.compute_loss(&score, &batch_label, debug);
+                    let (loss_training, l2_reg_penalty_training): (f64, f64) =
+                        self.compute_loss(&score, &batch_label, debug);
                     let acc_training: f64 = self.accuracy(&score, &batch_label);
                     let acc_validation: f64 = self.accuracy(&score_validation, &validation_label);
 
                     println!(
-                        "Epoch : {}, Batch : {}, Loss : {}, Acc {}, Val_loss : {}, Val_acc : {}",
+                        "Epoch : {}, Batch : {}, Loss : {}, L2 reg penalty {} , Acc {}, Val_loss : {}, Val_acc : {}",
                         epoch + 1,
                         batch_row + 1,
                         loss_training,
+                        l2_reg_penalty_training,
                         acc_training,
                         loss_validation,
                         acc_validation

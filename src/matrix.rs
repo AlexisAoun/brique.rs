@@ -41,7 +41,7 @@ impl Matrix {
     }
 
     pub fn init_rand(fan_in: usize, fan_out: usize) -> Matrix {
-        let std_dev = (2.0 / fan_in as f64).sqrt(); 
+        let std_dev = (2.0 / fan_in as f64).sqrt();
         let normal = Normal::new(0.0, std_dev).unwrap();
         let mut rng = rng();
 

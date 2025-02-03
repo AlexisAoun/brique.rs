@@ -22,7 +22,7 @@ pub fn testing() {
     println!("w {}", images.width);
 
     println!("loading pre-trained model...");
-    let mut model: Model = load_model("mnist_128x128_rq".to_string()).unwrap();
+    let mut model: Model = load_model("mnist_128x128_he-test".to_string()).unwrap();
 
     println!("evaluating...");
     let score = model.evaluate(&images, false);
@@ -46,15 +46,16 @@ pub fn training() {
         .add_layer(Layer::init(128, 128, true))
         .add_layer(Layer::init(128, 10, false))
         .optimizer(Optimizer::Adam {
-            learning_step: 0.007,
+            learning_step: 0.001,
             beta1: 0.9,
             beta2: 0.999,
         })
         .l2_reg(0.001)
         .checkpoint(Checkpoint::ValAcc {
-            save_path: "mnist_model".to_string(),
+            save_path: "did_i_do_it".to_string(),
         })
-        .build_and_train(&images, &labels, 128, 75, 2000);
+        .verbose(10, false)
+        .build_and_train(&images, &labels, 128, 10, 2000);
 }
 
 fn _print_a_number(labels: Matrix, images: Matrix, v: usize) {

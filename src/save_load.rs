@@ -262,7 +262,7 @@ pub fn layer_to_binary(input_layer: &Layer) -> Vec<u8> {
 
     output.append(&mut START_OF_OBJECT_MAGIC_NUMBER.to_vec());
     output.push(id_lookup_table.lookup("Layer"));
-    output.push(input_layer.activation as u8);
+    output.push(input_layer.relu as u8);
     output.append(&mut matrix_to_binary(&input_layer.weights_t));
     output.append(&mut matrix_to_binary(&input_layer.biases));
 

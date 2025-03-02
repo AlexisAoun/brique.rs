@@ -8,7 +8,7 @@ use brique::save_load::*;
 use brique::utils::*;
 
 fn main() {
-    testing();
+    training();
 }
 
 pub fn testing() {
@@ -18,11 +18,11 @@ pub fn testing() {
     println!("extraction done");
 
     images.normalize();
-    println!("h {}", images.height);
-    println!("w {}", images.width);
+    println!("number of images {}", images.height);
+    println!("number of pixels in each image {}", images.width);
 
     println!("loading pre-trained model...");
-    let mut model: Model = load_model("mnist_128x128_he-test".to_string()).unwrap();
+    let mut model: Model = load_model("mnist_128x128".to_string()).unwrap();
 
     println!("evaluating...");
     let score = model.evaluate(&images, false);
@@ -38,8 +38,8 @@ pub fn training() {
     println!("extraction done");
 
     images.normalize();
-    println!("h {}", images.height);
-    println!("w {}", images.width);
+    println!("number of images {}", images.height);
+    println!("number of pixels in each image {}", images.width);
 
     ModelBuilder::new()
         .add_layer(Layer::init(28 * 28, 128, true))
@@ -52,7 +52,7 @@ pub fn training() {
         })
         .l2_reg(0.001)
         .checkpoint(Checkpoint::ValAcc {
-            save_path: "did_i_do_it".to_string(),
+            save_path: "mnist_128x128".to_string(),
         })
         .verbose(10, false)
         .build_and_train(&images, &labels, 128, 10, 2000);

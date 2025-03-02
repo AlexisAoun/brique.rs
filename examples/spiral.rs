@@ -9,7 +9,7 @@ pub fn main() {
     let (data, labels) = generate_spiral_dataset(3000, 3);
 
     // Layer::init(number_of_inputs: u32, number_of_neurons_for_the_layer: u32, reLu: bool)
-    // if the last is arg, applies ReLu as the activation function
+    // if the last arg is true, applies ReLu as the activation function
     // by default softmax is applied to the last layer
 
     // One point of the spiral dataset consists of a X and a Y

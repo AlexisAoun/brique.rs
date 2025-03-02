@@ -124,7 +124,7 @@ impl Model {
                 d_z = r[0].backprop(
                     &d_z,
                     &l[index - 1].output,
-                    l[index - 1].activation,
+                    l[index - 1].relu,
                     self.lambda,
                     &self.optimizer,
                     iteration,

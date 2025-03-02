@@ -9,19 +9,11 @@ edition = "2021"
 rand = "0.9"
 rand_distr = "0.5.0"
 
-[dev-dependencies]
-criterion = "0.5" 
-
 [[example]]
 name = "mnist"
 
-[[bench]]
-name = "matrix_benches"
-harness = false
-
-[[bench]]
-name = "model_benches"
-harness = false
+[[example]]
+name = "spiral"
 
 [lib]
 name = "brique"

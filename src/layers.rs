@@ -10,7 +10,7 @@ const EPSILON: f64 = 10E-8;
 pub struct Layer {
     pub weights_t: Matrix,
     pub biases: Matrix,
-    pub activation: bool,
+    pub relu: bool,
     pub output: Matrix,
 
     // for adam optimizer
@@ -21,11 +21,11 @@ pub struct Layer {
 }
 
 impl Layer {
-    pub fn init(input_size: u32, size: u32, activation: bool) -> Layer {
+    pub fn init(input_size: u32, size: u32, relu: bool) -> Layer {
         Layer {
             weights_t: Matrix::init_rand(input_size.try_into().unwrap(), size.try_into().unwrap()),
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
-            activation,
+            relu,
             output: Matrix::init_zero(0, 0),
             first_moment_weight: None,
             first_moment_biase: None,
@@ -34,11 +34,11 @@ impl Layer {
         }
     }
 
-    pub fn init_with_data(weights_t: Matrix, biases: Matrix, activation: bool) -> Layer {
+    pub fn init_with_data(weights_t: Matrix, biases: Matrix, relu: bool) -> Layer {
         Layer {
             weights_t,
             biases,
-            activation,
+            relu,
             output: Matrix::init_zero(0, 0),
             first_moment_weight: None,
             first_moment_biase: None,
@@ -48,11 +48,11 @@ impl Layer {
     }
 
     #[allow(dead_code)]
-    pub fn init_test(size: u32, activation: bool, weights_t: Matrix) -> Layer {
+    pub fn init_test(size: u32, relu: bool, weights_t: Matrix) -> Layer {
         Layer {
             weights_t,
             biases: Matrix::init_zero(1, size.try_into().unwrap()),
-            activation,
+            relu,
             output: Matrix::init_zero(0, 0),
             first_moment_weight: None,
             first_moment_biase: None,
@@ -65,8 +65,8 @@ impl Layer {
         let mut tmp_output = input.dot(&self.weights_t);
         tmp_output = tmp_output.add_1d_matrix_to_all_rows(&self.biases);
 
-        if self.activation {
-            tmp_output = self.activation(&tmp_output);
+        if self.relu {
+            tmp_output = self.relu(&tmp_output);
         }
 
         if !predict {
@@ -85,7 +85,7 @@ impl Layer {
         &mut self,
         d_z: &Matrix,
         z_minus_1: &Matrix,
-        previous_layer_activation: bool,
+        previous_layer_relu: bool,
         lambda: f64,
         optimizer: &Optimizer,
         iteration: i32,
@@ -115,7 +115,7 @@ impl Layer {
 
         let mut new_d_z = d_z.dot(&self.weights_t.t());
         if !is_input_layer {
-            if previous_layer_activation {
+            if previous_layer_relu {
                 new_d_z.compute_d_relu_inplace(z_minus_1);
             }
         }
@@ -127,7 +127,7 @@ impl Layer {
     }
 
     //implementing ReLu for this project
-    fn activation(&self, input: &Matrix) -> Matrix {
+    fn relu(&self, input: &Matrix) -> Matrix {
         let mut output: Matrix = Matrix::init_zero(input.height, input.width);
         for r in 0..input.height {
             for c in 0..input.width {

@@ -1,30 +1,30 @@
-use brique::checkpoint::Checkpoint;
 use brique::layers::*;
-use brique::matrix::*;
-use brique::model::*;
 use brique::model_builder::ModelBuilder;
 use brique::optimizer::Optimizer;
-use brique::save_load::*;
-use brique::utils::*;
+use brique::spiral::generate_spiral_dataset;
 
-pub fn spiral_dataset_test() {
-    // generating the spiral dataset points 
+pub fn main() {
+    // generating the spiral dataset points
+    // 3000 points, spread into three classes (here a class = one spiral)
     let (data, labels) = generate_spiral_dataset(3000, 3);
-    
-    let layer1 = Layer::init(2, 30, true);
-    let layer2 = Layer::init(30, 30, true);
-    let layer3 = Layer::init(30, 3, false);
-    
-    let layers = vec![layer1, layer2, layer3];
-    let adam = Optimizer::Adam {
-        learning_step: 0.05,
-        beta1: 0.9,
-        beta2: 0.999,
-    };
-    
-    let mut model = Model::init(layers, adam, 0.001);
-    
-    model.train(&data, &labels, 50, 2, 500, 10, false, false);
-    
-    save_load::save_model(&model, "spiral_model".to_string()).unwrap();
+
+    // Layer::init(number_of_inputs: u32, number_of_neurons_for_the_layer: u32, reLu: bool)
+    // if the last is arg, applies ReLu as the activation function
+    // by default softmax is applied to the last layer
+
+    // One point of the spiral dataset consists of a X and a Y
+    // So the first layer has 2 inputs
+    // The last layer has 3 neurons because we have 3 classes, and therefore we want 3 outputs
+
+    // build and train
+    // (data: &matrix, labels: &matrix, batch_size: u32, number_of_epochs: u32, size_of_the_validation_dataset, usize)
+    let _ = ModelBuilder::new()
+        .add_layer(Layer::init(2, 10, true))
+        .add_layer(Layer::init(10, 10, true))
+        .add_layer(Layer::init(10, 3, false))
+        .optimizer(Optimizer::SGD {
+            learning_step: 0.001,
+        })
+        .l2_reg(0.0001)
+        .build_and_train(&data, &labels, 128, 10, 500);
 }

@@ -164,36 +164,32 @@ cargo run --example mnist
 ```
 ## The .brq binary file
 
-+---------------------+----------------+-------------------------------------+
-| Field               | Size (bytes)   | Description                         |
-+---------------------+----------------+-------------------------------------+
-| **Header**          |                |                                     |
-| Magic Number        | 6              | Fixed identifier "COOKIE"           |
-| Version             | 1              | Library version                     |
-| Length              | 8              | Total file size                     |
-+---------------------+----------------+-------------------------------------+
-| **Model Data**      |                |                                     |
-| Start of Object     | 3              | Fixed identifier "CAT"              |
-| Model ID            | 1              | Identifier for Model                |
-| Learning Step       | 8              | f64 value                           |
-| Number of Layers    | 8              | u64 value                           |
-| Layers              | Variable       | Depends on the number of layers     |
-+---------------------+----------------+-------------------------------------+
-| **Layer Data**      |                | (Repeated for each layer)           |
-| Start of Object     | 3              | Fixed identifier "CAT"              |
-| Layer ID            | 1              | Identifier for Layer                |
-| Activation (ReLU)   | 1              | bool as u8                          |
-| Weights Matrix      | Variable       | Depends on matrix size              |
-| Biases Matrix       | Variable       | Depends on matrix size              |
-+---------------------+----------------+-------------------------------------+
-| **Matrix Data**     |                | (Repeated for each matrix)          |
-| Start of Object     | 3              | Fixed identifier "CAT"              |
-| Matrix ID           | 1              | Identifier for Matrix               |
-| Transposed          | 1              | bool as u8                          |
-| Height              | 8              | u64 value                           |
-| Width               | 8              | u64 value                           |
-| Data                | Variable       | Depends on the number of elements   |
-+---------------------+----------------+-------------------------------------+
+| **Field**          | **Size (bytes)** | **Description**                     |
+|--------------------|------------------|-------------------------------------|
+| **Header**         |                  |                                     |
+| Magic Number       | 6                | Fixed identifier "COOKIE"           |
+| Version            | 1                | Library version                     |
+| Length             | 8                | Total file size                     |
+| **Model Data**     |                  |                                     |
+| Start of Object    | 3                | Fixed identifier "CAT"              |
+| Model ID           | 1                | Identifier for Model                |
+| Learning Step      | 8                | f64 value                           |
+| Number of Layers   | 8                | u64 value                           |
+| Layers             | Variable         | Depends on the number of layers     |
+| **Layer Data**     |                  | (Repeated for each layer)           |
+| Start of Object    | 3                | Fixed identifier "CAT"              |
+| Layer ID           | 1                | Identifier for Layer                |
+| Activation (ReLU)  | 1                | bool as u8                          |
+| Weights Matrix     | Variable         | Depends on matrix size              |
+| Biases Matrix      | Variable         | Depends on matrix size              |
+| **Matrix Data**    |                  | (Repeated for each matrix)          |
+| Start of Object    | 3                | Fixed identifier "CAT"              |
+| Matrix ID          | 1                | Identifier for Matrix               |
+| Transposed         | 1                | bool as u8                          |
+| Height             | 8                | u64 value                           |
+| Width              | 8                | u64 value                           |
+| Data               | Variable         | Depends on the number of elements   |
+
 
 ## But why ? 
 

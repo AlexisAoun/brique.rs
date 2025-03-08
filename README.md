@@ -21,6 +21,16 @@ The only dependencies of the project are the rand and rand-dist libs. There is n
 - Easy-to-use API based on a builder pattern
 - Save and load models with .brq file format
 
+## But why ? 
+
+For two main reasons : I love building things, which is why I chose coding in the first place, and most importantly, to learn.
+
+I significantly improved my Rust skills. I have know a better comprehension of the borrowing system and the memory structure in general.
+Before this project, I had a good theoretical grasp of how MLPs are structured and learn. Now, by writing and testing everything myself, I have a very deep understanding of every aspect of it.
+Beyond that I tackled many different problems. I wrote a CSV parser to facilitate unit and end-to-end testing and created my own binary encoder/decoder with a custom file format to save trained models.
+
+This experience as a whole made me a better engineer.
+
 ## Installation
 
 Create a Rust project 
@@ -189,8 +199,4 @@ cargo run --example mnist
 | Height             | 8                | u64 value                           |
 | Width              | 8                | u64 value                           |
 | Data               | Variable         | Depends on the number of elements   |
-
-
-## But why ? 
-
 

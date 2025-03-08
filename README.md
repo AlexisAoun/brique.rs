@@ -97,7 +97,9 @@ cargo run --release
 
 ### The MNIST example 
 
-Here's how to train the MNIST dataset and save the trained model using a checkpoint on the best validation accuracy 
+Here's how to train the MNIST dataset and save the trained model using a checkpoint on the best validation accuracy.
+
+Download the dataset from https://www.kaggle.com/datasets/hojjatk/mnist-dataset and copy the files in the root of the project
 
 You can use the pre-written functions to extract the dataset
 
@@ -113,8 +115,8 @@ use brique::utils::*;
 
 pub fn main() {
     println!("extracting mnist data...");
-    let labels: Matrix = extract_labels("examples/mnist_data/train-labels.idx1-ubyte");
-    let mut images: Matrix = extract_images("examples/mnist_data/train-images.idx3-ubyte");
+    let labels: Matrix = extract_labels("train-labels.idx1-ubyte");
+    let mut images: Matrix = extract_images("train-images.idx3-ubyte");
     println!("extraction done");
 
     images.normalize();
@@ -144,8 +146,8 @@ Code example of how to load the model and test it
 ```rust 
 pub fn main() {
     println!("extracting mnist data...");
-    let labels: Matrix = extract_labels("examples/mnist_data/t10k-labels.idx1-ubyte");
-    let mut images: Matrix = extract_images("examples/mnist_data/t10k-images.idx3-ubyte");
+    let labels: Matrix = extract_labels("t10k-labels.idx1-ubyte");
+    let mut images: Matrix = extract_images("t10k-images.idx3-ubyte");
     println!("extraction done");
 
     images.normalize();
@@ -172,6 +174,7 @@ And
 ```sh 
 cargo run --example mnist
 ```
+
 ## The .brq binary file
 
 | **Field**          | **Size (bytes)** | **Description**                     |

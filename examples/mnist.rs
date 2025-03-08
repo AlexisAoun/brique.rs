@@ -13,8 +13,8 @@ fn main() {
 
 pub fn testing() {
     println!("extracting mnist data...");
-    let labels: Matrix = extract_labels("examples/mnist_data/t10k-labels.idx1-ubyte");
-    let mut images: Matrix = extract_images("examples/mnist_data/t10k-images.idx3-ubyte");
+    let labels: Matrix = extract_labels("t10k-labels.idx1-ubyte");
+    let mut images: Matrix = extract_images("t10k-images.idx3-ubyte");
     println!("extraction done");
 
     images.normalize();
@@ -33,8 +33,8 @@ pub fn testing() {
 
 pub fn training() {
     println!("extracting mnist data...");
-    let labels: Matrix = extract_labels("examples/mnist_data/train-labels.idx1-ubyte");
-    let mut images: Matrix = extract_images("examples/mnist_data/train-images.idx3-ubyte");
+    let labels: Matrix = extract_labels("train-labels.idx1-ubyte");
+    let mut images: Matrix = extract_images("train-images.idx3-ubyte");
     println!("extraction done");
 
     images.normalize();

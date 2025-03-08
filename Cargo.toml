@@ -1,5 +1,5 @@
 [package]
-name = "brique"
+name = "brique-rs"
 version = "0.2.1"
 author = "Alexis Aoun"
 description = "A MLP library made from scratch, using the rust standard lib"

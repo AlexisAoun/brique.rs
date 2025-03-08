@@ -43,7 +43,7 @@ Add the library to your dependency list, in the Cargo.toml file
 
 ```sh
 [dependencies]
-brique = "0.2.1"
+brique-rs = "0.2.1"
 ```
 
 ## Usage

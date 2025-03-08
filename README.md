@@ -1,7 +1,7 @@
 # brique.rs
 ## What is brique.rs ? 
 
-Brique.rs is a multi-perceptron layer (MLP) Rust library developped from scratch with the use of no other libraries. 
+Brique.rs is a multi-perceptron layer (MLP) library developped in rust from scratch without using any other library. 
 
 Everything was made from scratch : 
 
@@ -25,7 +25,7 @@ The only dependencies of the project are the rand and rand-dist libs. There is n
 
 For two main reasons : I love building things, which is why I chose coding in the first place, and most importantly, to learn.
 
-I significantly improved my Rust skills. I have know a better comprehension of the borrowing system and the memory structure in general.
+I significantly improved my Rust skills. I now have a better comprehension of the borrowing system and the memory structure in general.
 Before this project, I had a good theoretical grasp of how MLPs are structured and learn. Now, by writing and testing everything myself, I have a very deep understanding of every aspect of it.
 Beyond that I tackled many different problems. I wrote a CSV parser to facilitate unit and end-to-end testing and created my own binary encoder/decoder with a custom file format to save trained models.
 

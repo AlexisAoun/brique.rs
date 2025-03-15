@@ -91,6 +91,15 @@ pub fn load_model(file_path: String) -> Result<Model, ModelManagementError> {
     binary_to_model(&byte_stream, HEADER_SIZE as usize)
 }
 
+pub fn load_model_from_byte_stream(byte_stream: &Vec<u8>) -> Result<Model, ModelManagementError> {
+    match check_header(&byte_stream) {
+        Ok(()) => (),
+        Err(e) => return Err(e),
+    };
+
+    binary_to_model(&byte_stream, HEADER_SIZE as usize)
+}
+
 // header (size 15 bytes)
 // magic number : 6 bytes
 // version, would match the version of the release of the lib, i.e, 0.2 => 2, 0.3 => 3 .... 1.0 => 10, 1.1 => 11 : 1 byte
